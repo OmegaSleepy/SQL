@@ -1,0 +1,4 @@
+drop table if exists characters;
+drop table if exists weapons;
+drop table if exists elements;
+drop table if exists characters;
