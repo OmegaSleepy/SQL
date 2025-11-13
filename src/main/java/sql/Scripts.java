@@ -23,8 +23,13 @@ public class Scripts {
             throw new RuntimeException(e);
         }
 
-        Log.logSimple.accept("End of program");
+        Log.info("End of program");
         Log.saveToFile();
+    }
+
+    static void clearLogs(){
+        Log.error("Cleared logs");
+        Log.clearLogs();
     }
 
     public static void main (String[] args) {
@@ -37,6 +42,7 @@ public class Scripts {
             case DROP -> dropEverything();
             case GENERATE -> generateEverything();
             case RUN_SCRIPT -> runScript();
+            case CLEAR_LOGS -> clearLogs();
         }
 
         endScript();
