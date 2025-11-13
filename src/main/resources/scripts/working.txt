@@ -1,1 +1,1 @@
-select * from weapons;
+select * from characters;
