@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static sql.Log.info;
 import static sql.Log.logSQL;
@@ -68,54 +69,42 @@ public class Queries {
         if(!files.contains(sequenceTXT)){
             CrashUtil.crashHandler(new RuntimeException("You must have a sequence.txt in a sequence line"));
         }
-        Scanner scanner = null;
 
-        try {
-            scanner = new Scanner(sequenceTXT);
+        try (Scanner scanner = new Scanner(sequenceTXT)){
+            StringBuilder sequence = new StringBuilder();
+            while (scanner.hasNextLine()){
+                sequence.append(scanner.nextLine());
+            }
+
+            String[] sequenceLine = Arrays.stream(sequence.toString().split(","))
+                    .map(s -> s.trim().toLowerCase())
+                    .toArray(String[]::new);
+
+            Map<String, File> filesMap = Arrays.stream(Objects.requireNonNull(dir.listFiles()))
+                    .collect(Collectors.toMap(f -> f.getName().toLowerCase(), f -> f));
+
+            for (int i = 0; i != sequenceLine.length; i++){
+                filesMap.put(sequenceLine[i],null);
+            }
+
+            var answers = new ArrayList<ArrayList<String[]>>();
+
+
+            for (String fileName : sequenceLine) {
+                File file = filesMap.get(fileName + ".txt");
+                if (file == null) {
+                    CrashUtil.crashHandler(new RuntimeException("File not found: " + fileName + ".txt"));
+                }
+                answers.add(queryFromFile(file));
+            }
+
+            return answers;
+
         } catch (FileNotFoundException e) {
             CrashUtil.crashHandler(e);
         }
 
-        String sequence = "";
-
-        while (scanner.hasNextLine()){
-            sequence += scanner.nextLine();
-        }
-
-        String[] sequenceLine = sequence.split(",");
-
-        for (int i = 0; i < sequenceLine.length; i++) {
-            sequenceLine[i] = sequenceLine[i].trim().toLowerCase();
-        }
-
-        ArrayList<File> fileSequence = new ArrayList<>();
-
-        for (String fileName: sequenceLine){
-
-            File tempFileList = null;
-
-            for(File file: files){
-                var fileURL = dir.getAbsolutePath() + "\\" + fileName + ".txt";
-                var checkFileURL = file.getAbsolutePath();
-
-                if(checkFileURL.equals(fileURL)){
-                    tempFileList = (file);
-                    break;
-                }
-            }
-
-            fileSequence.add(tempFileList);
-
-        }
-
-        var answers = new ArrayList<ArrayList<String[]>>();
-
-        for (File queryFile: fileSequence){
-            answers.add(queryFromFile(queryFile));
-        }
-
-        return answers;
-
+        return null;
     }
 
     public static ArrayList<ArrayList<String[]>> queryFromLine (File dir){

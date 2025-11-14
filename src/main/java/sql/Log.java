@@ -19,25 +19,26 @@ public class Log {
 
     private static final List<String> buffer = new ArrayList<>();
 
-    public static void clearLogs(){
+    public static void deleteLogs () {
         File folder = new File(LOG_DIR);
 
-        if(!folder.exists() || !folder.isDirectory()) return;
+        if (!folder.exists() || !folder.isDirectory()) return;
 
-        for (File file: Objects.requireNonNull(folder.listFiles())){
+        for (File file : Objects.requireNonNull(folder.listFiles())) {
             if (file == null) {
                 return;
             }
-            if(file.isFile()){
+            if (file.isFile()) {
                 file.delete();
             }
         }
+        Log.warn("Cleared logs");
     }
 
-    public static void cleanUp(){
+    public static void cleanUp () {
         File folder = new File(LOG_DIR);
 
-        if(!folder.exists() || !folder.isDirectory()) return;
+        if (!folder.exists() || !folder.isDirectory()) return;
 
         int logCount = folder.listFiles().length;
 
@@ -45,40 +46,35 @@ public class Log {
 
         info("There are %d logs in memory".formatted(logCount));
 
-        if(logCount > MAX_LOGS){
-            error("There are over %d logs, deleting %d oldest".formatted(MAX_LOGS, logCount-MAX_LOGS));
+        if (logCount > MAX_LOGS) {
+            error("There are over %d logs, deleting %d oldest".formatted(MAX_LOGS, logCount - MAX_LOGS));
 
-            for (int i = 0; i < logCount-MAX_LOGS; i++) {
+            for (int i = 0; i < logCount - MAX_LOGS; i++) {
                 assert logs != null;
                 warn("Deleting %s".formatted(logs[i].getName()));
                 logs[i].delete();
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    CrashUtil.crashHandler(e);
-                }
             }
 
         }
 
-
-
     }
 
-
-    public static void info(String message){
+    public static void info (String message) {
         log(message, GREEN);
         infoCount++;
     }
-    public static void exec(String message){
+
+    public static void exec (String message) {
         log(message, BLUE);
         execCount++;
     }
-    public static void error(String message){
+
+    public static void error (String message) {
         log(message, RED);
         errorCount++;
     }
-    public static void warn(String message){
+
+    public static void warn (String message) {
         log(message, YELLOW);
         warnCount++;
     }
@@ -90,6 +86,7 @@ public class Log {
     static int specialCount;
 
     public static void saveToFile () {
+
         try {
             File dir = new File(LOG_DIR);
             if (!dir.exists()) dir.mkdir();
@@ -113,21 +110,21 @@ public class Log {
         } catch (IOException e) {
             CrashUtil.crashHandler(e);
         }
+
     }
 
-    private static String getLogVersion(){
+    private static String getLogVersion () {
         return "LOG VERSION=%s | LOG DIR=%s "
                 .formatted(LOG_VERSION, LOG_DIR);
     }
 
-    private static String getLogCount() {
+    private static String getLogCount () {
         return "INFO=%d | EXEC=%d | ERROR=%d | SPECIAL=%d"
                 .formatted(infoCount, execCount, errorCount, specialCount);
     }
 
 
-
-    public static String stripAnsi(String message) {
+    public static String stripAnsi (String message) {
 
         message = message.replace(RED, "ERROR ");
         message = message.replace(BLUE, "EXEC ");
@@ -137,13 +134,12 @@ public class Log {
         return message;
     }
 
-    private static void log(String message, String color) {
+    private static void log (String message, String color) {
         String timestamp = "[" + LocalDateTime.now().format(TIME) + "] ";
 
         // Console (colored)
         System.out.println(color + timestamp + RESET + message);
 
-        // Save raw (no ANSI)
         buffer.add(color + timestamp + message);
     }
 

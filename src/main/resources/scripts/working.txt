@@ -1,1 +1,2 @@
-insert into transactions (transaction_id, amount)
+use genshin;
+select * from characters;

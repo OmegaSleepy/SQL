@@ -16,6 +16,6 @@ const val RED = "\u001B[31m"
 const val YELLOW = "\u001B[33m"
 
 //==========OTHER INFO===========
-const val LOG_VERSION = "0.5.3"
+const val LOG_VERSION = "0.5.4"
 const val MAX_LOGS = 32
 const val LOG_DIR = "logs"

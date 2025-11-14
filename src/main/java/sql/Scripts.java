@@ -5,8 +5,6 @@ import game.Holder;
 
 import java.sql.SQLException;
 
-import static sql.ScriptCommands.*;
-
 public class Scripts {
 
     static void dropEverything(){
@@ -18,10 +16,10 @@ public class Scripts {
     }
 
     static void runScript(){
-        Queries.queryFromFile(FileUtil.getScriptFile("default_database.txt"));
+        Queries.queryFromFile(FileUtil.getScriptFile("working.txt"));
     }
 
-    static void endScript(){
+    static void endScript(long end){
         try {
             SqlConnection.connection.close();
         } catch (SQLException e) {
@@ -29,12 +27,13 @@ public class Scripts {
         }
 
         Log.info("End of program");
+        Log.info("Program took %f seconds to execute".formatted((end - start)*1e-9));
         Log.saveToFile();
+
     }
 
     static void clearLogs(){
-        Log.error("Cleared logs");
-        Log.clearLogs();
+        Log.deleteLogs();
     }
 
     static void initialize (){
@@ -47,8 +46,11 @@ public class Scripts {
     }
 
 
+    public static long start;
+
     public static void main (String[] args) {
         Queries.queryResult("");
+        start = System.nanoTime();
 
         Log.cleanUp();
 
@@ -63,8 +65,8 @@ public class Scripts {
             }
         }
 
-
-        endScript();
+        long end = System.nanoTime();
+        endScript(end);
 
     }
 
