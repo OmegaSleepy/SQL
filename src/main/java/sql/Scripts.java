@@ -5,6 +5,8 @@ import game.Holder;
 
 import java.sql.SQLException;
 
+import static sql.ScriptCommands.*;
+
 public class Scripts {
 
     static void dropEverything(){
@@ -35,24 +37,30 @@ public class Scripts {
         Log.clearLogs();
     }
 
-    static void innitialize (){
+    static void initialize (){
         GenshinCharacter.getAllCharacters();
         Holder.innitialize();
     }
 
+    static void runSequence (){
+        Queries.queryFromSequence(FileUtil.getLineFile("simple"));
+    }
+
+
     public static void main (String[] args) {
-        ScriptCommands arg;
+        Queries.queryResult("");
 
-        arg = ScriptCommands.valueOf(args[0].toUpperCase());
-
-
-        switch (arg){
-            case DROP -> dropEverything();
-            case GENERATE -> generateEverything();
-            case RUN_SCRIPT -> runScript();
-            case CLEAR_LOGS -> clearLogs();
-            case INNITIALIZATION -> innitialize();
+        for (String arg: args){
+            switch (ScriptCommands.valueOf(arg)){
+                case DROP -> dropEverything();
+                case GENERATE -> generateEverything();
+                case RUN_SCRIPT -> runScript();
+                case CLEAR_LOGS -> clearLogs();
+                case INITIALIZATION -> initialize();
+                case SEQUENCE -> runSequence();
+            }
         }
+
 
         endScript();
 

@@ -20,6 +20,12 @@ public class FileUtil {
         return file;
     }
 
+    public static File getLineFile (String fileName){
+        fileName = "scripts/line/" + fileName;
+
+        return getFile(fileName);
+    }
+
     public static File getScriptFile (String fileName){
         fileName = "scripts/" + fileName;
 

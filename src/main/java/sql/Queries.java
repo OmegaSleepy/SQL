@@ -62,12 +62,18 @@ public class Queries {
 
         List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
 
-        if(!files.contains(new File("sequence.txt"))){
+        File sequenceTXT = new File(dir + "/sequence.txt");
+        
+        if(!files.contains(sequenceTXT)){
             CrashUtil.crashHandler(new RuntimeException("You must have a sequence.txt in a sequence line"));
         }
-        Scanner scanner;
+        Scanner scanner = null;
 
-        scanner = new Scanner(dir  + "sequence.txt");
+        try {
+            scanner = new Scanner(sequenceTXT);
+        } catch (FileNotFoundException e) {
+            CrashUtil.crashHandler(e);
+        }
 
         String sequence = "";
 
@@ -81,18 +87,20 @@ public class Queries {
             sequenceLine[i] = sequenceLine[i].trim().toLowerCase();
         }
 
-        List<File> fileSequence = List.of();
+        ArrayList<File> fileSequence = new ArrayList<>();
 
         for (String fileName: sequenceLine){
 
-            List<File> tempFileList = List.of();
+            ArrayList<File> tempFileList = new ArrayList<>();
 
-            files.stream()
-                    .filter(file -> file.getName().equals(fileName))
-                    .forEach(tempFileList::add);
+            for(File file: files){
+                var fileURL = dir.getAbsolutePath() + "\\" + fileName + ".txt";
+                var checkFileURL = file.getAbsolutePath();
 
-            if(!(tempFileList.size() == 1)) {
-                CrashUtil.crashHandler(new RuntimeException("Cannot have the same file twice! " + tempFileList.getFirst().getName()));
+                if(checkFileURL.equals(fileURL)){
+                    tempFileList.add(file);
+                    break;
+                }
             }
 
             fileSequence.add(tempFileList.getFirst());

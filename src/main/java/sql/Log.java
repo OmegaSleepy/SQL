@@ -97,12 +97,12 @@ public class Log {
     public static final Consumer<List<String[]>> logSelect = rows -> {
 
         if (rows == null) {
-            error(" (no results)");
+//            error(" (no results)");
             return;
         }
 
         if (rows.isEmpty()) {
-            error(" (no results)");
+//            error(" (no results)");
             return;
         }
 
