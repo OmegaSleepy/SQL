@@ -1,0 +1,4 @@
+use genshin;
+drop table if exists elements;
+drop table if exists weapon;
+drop table if exists nation;

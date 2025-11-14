@@ -1,10 +1,6 @@
 package sql;
 
-import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
-import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
-
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -36,22 +32,62 @@ public class Log {
                 file.delete();
             }
         }
+    }
+
+    public static void cleanUp(){
+        File folder = new File(LOG_DIR);
+
+        if(!folder.exists() || !folder.isDirectory()) return;
+
+        int logCount = folder.listFiles().length;
+
+        File[] logs = folder.listFiles();
+
+        info("There are %d logs in memory".formatted(logCount));
+
+        if(logCount > MAX_LOGS){
+            error("There are over %d logs, deleting %d oldest".formatted(MAX_LOGS, logCount-MAX_LOGS));
+
+            for (int i = 0; i < logCount-MAX_LOGS; i++) {
+                assert logs != null;
+                warn("Deleting %s".formatted(logs[i].getName()));
+                logs[i].delete();
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    CrashUtil.crashHandler(e);
+                }
+            }
+
+        }
+
+
 
     }
 
 
     public static void info(String message){
         log(message, GREEN);
+        infoCount++;
     }
     public static void exec(String message){
         log(message, BLUE);
+        execCount++;
     }
     public static void error(String message){
         log(message, RED);
+        errorCount++;
     }
-    public static void special(String message){
+    public static void warn(String message){
         log(message, YELLOW);
+        warnCount++;
     }
+
+    static int infoCount;
+    static int execCount;
+    static int errorCount;
+    static int warnCount;
+    static int specialCount;
 
     public static void saveToFile () {
         try {
@@ -63,15 +99,33 @@ public class Log {
             file.createNewFile();
 
             try (FileWriter writer = new FileWriter(file)) {
+
+                info(getLogVersion());
+                info(getLogCount());
+                info("Saved to < %s >".formatted(filename));
+
                 for (String line : buffer) {
                     writer.write(stripAnsi(line) + System.lineSeparator());
                 }
+
             }
 
         } catch (IOException e) {
             CrashUtil.crashHandler(e);
         }
     }
+
+    private static String getLogVersion(){
+        return "LOG VERSION=%s | LOG DIR=%s "
+                .formatted(LOG_VERSION, LOG_DIR);
+    }
+
+    private static String getLogCount() {
+        return "INFO=%d | EXEC=%d | ERROR=%d | SPECIAL=%d"
+                .formatted(infoCount, execCount, errorCount, specialCount);
+    }
+
+
 
     public static String stripAnsi(String message) {
 
@@ -96,38 +150,35 @@ public class Log {
 
     public static final Consumer<List<String[]>> logSelect = rows -> {
 
-        if (rows == null) {
-//            error(" (no results)");
-            return;
-        }
+        if (rows == null || rows.isEmpty()) return;
 
-        if (rows.isEmpty()) {
-//            error(" (no results)");
-            return;
-        }
+        int columns = rows.stream()
+                .mapToInt(r -> r.length)
+                .max()
+                .orElse(0);
 
-        int columns = rows.getFirst().length;
         int[] maxWidths = new int[columns];
 
         // compute max width for each column
         for (String[] row : rows) {
             for (int i = 0; i < columns; i++) {
-                int len = row[i] != null ? row[i].length() : 4; // for null
-                maxWidths[i] = Math.max(maxWidths[i], len);
+                String cell = (i < row.length && row[i] != null) ? row[i] : "null";
+                maxWidths[i] = Math.max(maxWidths[i], cell.length());
             }
         }
 
         // print rows with proper alignment
         for (String[] row : rows) {
-            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < columns; i++) {
-                String cell = row[i] != null ? row[i] : "null";
-                stringBuilder.append(String.format("%-" + maxWidths[i] + "s", cell)); // left-align
-                if (i < columns - 1) stringBuilder.append(" | ");
+                String cell = (i < row.length && row[i] != null) ? row[i] : "null";
+                sb.append(String.format("%-" + maxWidths[i] + "s", cell));
+                if (i < columns - 1) sb.append(" | ");
             }
-            info(stringBuilder.toString());
+            info(sb.toString());
         }
     };
+
 
     // Consumer for SQL code execution (CREATE, INSERT, UPDATE, DELETE)
     public static final Consumer<String> logSQL = Log::exec;

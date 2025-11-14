@@ -14,7 +14,7 @@ public class Scripts {
     }
 
     static void generateEverything(){
-        Queries.queryFromFile(FileUtil.getScriptFile("premade/generate.txt"));
+        Queries.queryFromSequence(FileUtil.getLineFile("refresh"));
     }
 
     static void runScript(){
@@ -28,7 +28,7 @@ public class Scripts {
             CrashUtil.crashHandler(e);
         }
 
-        Log.special("End of program");
+        Log.info("End of program");
         Log.saveToFile();
     }
 
@@ -43,12 +43,14 @@ public class Scripts {
     }
 
     static void runSequence (){
-        Queries.queryFromSequence(FileUtil.getLineFile("simple"));
+        Queries.queryFromSequence(FileUtil.getLineFile("linked"));
     }
 
 
     public static void main (String[] args) {
         Queries.queryResult("");
+
+        Log.cleanUp();
 
         for (String arg: args){
             switch (ScriptCommands.valueOf(arg)){

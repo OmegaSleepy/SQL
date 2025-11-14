@@ -28,10 +28,11 @@ public class Queries {
             if (query.isEmpty()) continue;
 
             result = executeExpression(query);
+            Log.logSelect.accept(result);
 
         }
 
-        Log.logSelect.accept(result);
+
         return result;
     }
 
@@ -91,19 +92,19 @@ public class Queries {
 
         for (String fileName: sequenceLine){
 
-            ArrayList<File> tempFileList = new ArrayList<>();
+            File tempFileList = null;
 
             for(File file: files){
                 var fileURL = dir.getAbsolutePath() + "\\" + fileName + ".txt";
                 var checkFileURL = file.getAbsolutePath();
 
                 if(checkFileURL.equals(fileURL)){
-                    tempFileList.add(file);
+                    tempFileList = (file);
                     break;
                 }
             }
 
-            fileSequence.add(tempFileList.getFirst());
+            fileSequence.add(tempFileList);
 
         }
 
@@ -172,7 +173,6 @@ public class Queries {
         return true;
     }
 
-
     private static ArrayList<String[]> executeExpression (String query) {
 
         logSQL.accept(query);
@@ -200,12 +200,20 @@ public class Queries {
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
 
+            String[] columnNames = new String[columnCount];
+            for (int i = 0; i < columnCount; i++) {
+                columnNames[i] = (metaData.getColumnName(i+1));
+            }
+
+            result.add(0,columnNames);
+            result.add(1,new String[]{"","",""});
+
             // loop through all rows
             while (resultSet.next()) {
                 String[] row = new String[columnCount];
                 for (int i = 1; i <= columnCount; i++) {
                     Object value = resultSet.getObject(i);
-                    row[i - 1] = (value != null) ? value.toString() : null;
+                    row[i-1] = (value != null) ? value.toString() : null;
                 }
                 result.add(row);
             }

@@ -1,0 +1,32 @@
+use genshin;
+create table elements(
+    element_name varchar(12) primary key
+);
+
+insert into elements (element_name)
+values("Anemo"),("Geo"),("Electro"),("Dentro"),("Hydro"),("Pyro"),("Cryo");
+
+drop table if exists nations;
+create table nations(
+    nation_name varchar(12) primary key
+);
+
+insert into nations (nation_name)
+values	("Monstadt"),
+		("Liyue"),
+		("Outside"),
+        ("Inazuma"),
+        ("Sumeru"),
+        ("Fontaine"),
+        ("Natlan"),
+        ("Nod Krai"),
+        ("Snezhnaya"),
+        ("Kh'anreah");
+
+drop table if exists weapons;
+create table weapons(
+    weapon_name varchar(12) primary key
+);
+
+insert into weapons (weapon_name)
+values ("Sword"),("Bow"),("Catalyst"),("Claymore"),("Polearm");

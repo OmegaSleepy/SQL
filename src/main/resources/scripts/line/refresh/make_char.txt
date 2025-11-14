@@ -1,4 +1,4 @@
-drop table if exists characters;
+use genshin;
 create table characters(
  character_id int auto_increment primary key,
  character_name varchar(32),
@@ -6,8 +6,14 @@ create table characters(
  element varchar(16),
  nation varchar(16),
  weapon varchar(16),
- isFiveStar boolean
+ isFiveStar boolean,
+ foreign key(element) references elements(element_name),
+ foreign key(nation) references nations(nation_name),
+ foreign key(weapon) references weapons(weapon_name)
 );
+
+delete from characters;
+
 insert into characters (character_name, version, element, nation, weapon, isFiveStar)
  values
 ("Noele", 1.0, "geo", "monstadt", "claymore", false),
@@ -112,48 +118,10 @@ insert into characters (character_name, version, element, nation, weapon, isFive
 ("Citlali", 5.3, "cryo", "natlan", "catalyst", true),
 ("Mavuika", 5.3, "pyro", "natlan", "claymore", true),
 ("Varesa", 5.5, "electro", "natlan", "catalyst", true),
-("Aino", 6.0, "hydro", "nod_krai", "claymore", false),
-("Jahoda", 6.2, "anemo", "nod_krai", "bow", false),
-("Ineffa", 5.8, "electro", "nod_krai", "polearm", true),
-("Lauma", 6.0, "dentro", "nod_krai", "catalyst", true),
-("Flins", 6.0, "electro", "nod_krai", "polearm", true),
-("Nefer", 6.1, "dentro", "nod_krai", "catalyst", true),
-("Columbina", 6.3, "hydro", "nod_krai", "polearm", true);
-
-drop table if exists elements;
-create table elements(
-	element_id int primary key auto_increment,
-    element_name varchar(12)
-);
-
-insert into elements (element_name)
-values("Anemo"),("Geo"),("Electro"),("Dentro"),("Hydro"),("Pyro"),("Cryo");
-
-drop table if exists nations;
-create table nations(
-	nations_id int primary key auto_increment,
-    nation_name varchar(12)
-);
-
-insert into nations (nation_name)
-values	("Monstadt"),
-		("Liyue"),
-		("Outside"),
-        ("Inazuma"),
-        ("Sumeru"),
-        ("Fontaine"),
-        ("Natlan"),
-        ("Nod Krai"),
-        ("Snezhnaya"),
-        ("Kh'anreah");
-
-drop table if exists weapons;
-create table weapons(
-    weapon_id int primary key auto_increment,
-    weapon_name varchar(12)
-);
-
-insert into weapons (weapon_name)
-values ("Sword"),("Bow"),("Catalyst"),("Claymore"),("Polearm");
-
-select character_name, version, element, nation, weapon from characters;
+("Aino", 6.0, "hydro", "Nod Krai", "claymore", false),
+("Jahoda", 6.2, "anemo", "Nod Krai", "bow", false),
+("Ineffa", 5.8, "electro", "Nod Krai", "polearm", true),
+("Lauma", 6.0, "dentro", "Nod Krai", "catalyst", true),
+("Flins", 6.0, "electro", "Nod Krai", "polearm", true),
+("Nefer", 6.1, "dentro", "Nod Krai", "catalyst", true),
+("Columbina", 6.3, "hydro", "Nod Krai", "polearm", true);

@@ -1,2 +1,2 @@
-create database genshin;
-use genshin;
+create database if not exists keyset;
+use keyset;
