@@ -1,14 +1,16 @@
 package sql;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 
+import static sql.Log.info;
 import static sql.Log.logSQL;
 import static sql.SqlConnection.connection;
 
@@ -32,6 +34,136 @@ public class Queries {
         Log.logSelect.accept(result);
         return result;
     }
+
+    public static ArrayList<String[]> queryFromFile (File file) {
+
+        StringBuilder query = new StringBuilder();
+        Scanner scanner = null;
+
+        info("Running query from " + file);
+
+        try {
+            scanner = new Scanner(file);
+        } catch (FileNotFoundException e) {
+            CrashUtil.crashHandler(e);
+        }
+
+        while (true) {
+            assert scanner != null;
+            if (!scanner.hasNext()) break;
+            query.append(scanner.next()).append(" ");
+        }
+        return queryResult(query.toString());
+
+    }
+
+    public static ArrayList<ArrayList<String[]>> queryFromSequence (File dir){
+        if (!isValid(dir)) return null;
+
+        List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
+
+        if(!files.contains(new File("sequence.txt"))){
+            CrashUtil.crashHandler(new RuntimeException("You must have a sequence.txt in a sequence line"));
+        }
+        Scanner scanner;
+
+        scanner = new Scanner(dir  + "sequence.txt");
+
+        String sequence = "";
+
+        while (scanner.hasNextLine()){
+            sequence += scanner.nextLine();
+        }
+
+        String[] sequenceLine = sequence.split(",");
+
+        for (int i = 0; i < sequenceLine.length; i++) {
+            sequenceLine[i] = sequenceLine[i].trim().toLowerCase();
+        }
+
+        List<File> fileSequence = List.of();
+
+        for (String fileName: sequenceLine){
+
+            List<File> tempFileList = List.of();
+
+            files.stream()
+                    .filter(file -> file.getName().equals(fileName))
+                    .forEach(tempFileList::add);
+
+            if(!(tempFileList.size() == 1)) {
+                CrashUtil.crashHandler(new RuntimeException("Cannot have the same file twice! " + tempFileList.getFirst().getName()));
+            }
+
+            fileSequence.add(tempFileList.getFirst());
+
+        }
+
+        var answers = new ArrayList<ArrayList<String[]>>();
+
+        for (File queryFile: fileSequence){
+            answers.add(queryFromFile(queryFile));
+        }
+
+        return answers;
+
+    }
+
+    public static ArrayList<ArrayList<String[]>> queryFromLine (File dir){
+
+        if (!isValid(dir)) return null;
+
+        List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
+
+        //Sort by alphabetical order
+        files.sort((o1, o2) -> {
+            var first = o1.getName().toCharArray();
+            var second = o2.getName().toCharArray();
+
+            for (int i = 0; i < Math.max(first.length, second.length); i++) {
+                if(first[i] > second[i]){
+                    return 1;
+                } else if (second[i] > first[i]) {
+                    return -1;
+                }
+            }
+
+            if(first.length > second.length){
+                return 1;
+            } else if (first.length < second.length) {
+                return -1;
+            }
+            CrashUtil.crashHandler(new RuntimeException("You cannot have files with the same name in a sequence: " + o1.getName()));
+            return 0;
+
+        });
+
+        var answers = new ArrayList<ArrayList<String[]>>();
+
+        for (File queryFile: files){
+            answers.add(queryFromFile(queryFile));
+        }
+
+        return answers;
+
+
+    }
+
+    @Nullable
+    private static boolean isValid (File dir) {
+        if(!dir.exists()) {
+            CrashUtil.crashHandler(new RuntimeException("A sequence, with this name \"" + dir + "\" , does not exist"));
+            return false;
+        }
+
+        if(!dir.isDirectory()){
+            CrashUtil.crashHandler(new RuntimeException("This is not a directory"));
+            return false;
+        }
+
+        return true;
+    }
+
 
     private static ArrayList<String[]> executeExpression (String query) {
 
@@ -71,25 +203,5 @@ public class Queries {
             }
         }
         return result;
-    }
-
-    public static ArrayList<String[]> queryFromFile (File file) {
-
-        StringBuilder query = new StringBuilder();
-        Scanner scanner = null;
-
-        try {
-            scanner = new Scanner(file);
-        } catch (FileNotFoundException e) {
-            CrashUtil.crashHandler(e);
-        }
-
-        while (true) {
-            assert scanner != null;
-            if (!scanner.hasNext()) break;
-            query.append(scanner.next()).append(" ");
-        }
-        return queryResult(query.toString());
-
     }
 }

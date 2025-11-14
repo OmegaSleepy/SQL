@@ -16,7 +16,7 @@ public class Scripts {
     }
 
     static void runScript(){
-        Queries.queryFromFile(FileUtil.getScriptFile("working.txt"));
+        Queries.queryFromFile(FileUtil.getScriptFile("default_database.txt"));
     }
 
     static void endScript(){

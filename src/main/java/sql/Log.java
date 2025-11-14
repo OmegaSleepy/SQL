@@ -1,6 +1,10 @@
 package sql;
 
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -48,7 +52,6 @@ public class Log {
     public static void special(String message){
         log(message, YELLOW);
     }
-
 
     public static void saveToFile () {
         try {

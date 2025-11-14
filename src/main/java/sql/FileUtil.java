@@ -22,17 +22,8 @@ public class FileUtil {
 
     public static File getScriptFile (String fileName){
         fileName = "scripts/" + fileName;
-        URL url = SqlConnection.class.getClassLoader().getResource(fileName);
-        assert url != null;
-        File file;
 
-        try {
-            file = new File(url.toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-
-        return file;
+        return getFile(fileName);
 
     }
 
