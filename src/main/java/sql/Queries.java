@@ -14,7 +14,7 @@ import static sql.SqlConnection.connection;
 
 public class Queries {
 
-    public static void queryResult (String fullSql) {
+    public static ArrayList<String[]> queryResult (String fullSql) {
 
         String[] statements = fullSql.split(";");
 
@@ -30,6 +30,7 @@ public class Queries {
         }
 
         Log.logSelect.accept(result);
+        return result;
     }
 
     private static ArrayList<String[]> executeExpression (String query) {
@@ -45,7 +46,7 @@ public class Queries {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            CrashUtil.crashHandler(e);
         }
 
         return null;
@@ -72,22 +73,23 @@ public class Queries {
         return result;
     }
 
-    public static void queryFromFile (File file) {
+    public static ArrayList<String[]> queryFromFile (File file) {
 
         StringBuilder query = new StringBuilder();
-        Scanner scanner;
+        Scanner scanner = null;
 
         try {
             scanner = new Scanner(file);
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            CrashUtil.crashHandler(e);
         }
 
-        while (scanner.hasNext()) {
+        while (true) {
+            assert scanner != null;
+            if (!scanner.hasNext()) break;
             query.append(scanner.next()).append(" ");
         }
-
-        queryResult(query.toString());
+        return queryResult(query.toString());
 
     }
 }

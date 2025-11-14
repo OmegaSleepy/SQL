@@ -1,5 +1,8 @@
 package sql;
 
+import game.GenshinCharacter;
+import game.Holder;
+
 import java.sql.SQLException;
 
 public class Scripts {
@@ -20,16 +23,21 @@ public class Scripts {
         try {
             SqlConnection.connection.close();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            CrashUtil.crashHandler(e);
         }
 
-        Log.info("End of program");
+        Log.special("End of program");
         Log.saveToFile();
     }
 
     static void clearLogs(){
         Log.error("Cleared logs");
         Log.clearLogs();
+    }
+
+    static void innitialize (){
+        GenshinCharacter.getAllCharacters();
+        Holder.innitialize();
     }
 
     public static void main (String[] args) {
@@ -43,11 +51,10 @@ public class Scripts {
             case GENERATE -> generateEverything();
             case RUN_SCRIPT -> runScript();
             case CLEAR_LOGS -> clearLogs();
+            case INNITIALIZATION -> innitialize();
         }
 
         endScript();
-
-
 
     }
 

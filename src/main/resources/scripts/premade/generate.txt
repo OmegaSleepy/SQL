@@ -53,7 +53,6 @@ insert into characters (character_name, version, element, nation, weapon, isFive
 ("Yelan", 2.7, "hydro", "liyue", "bow", true),
 ("Baizhu", 3.6, "dentro", "liyue", "catalyst", true),
 ("Xianyun", 4.4, "anemo", "liyue", "catalyst", true),
-("Caledon Mare", 6.3, "anemo", "liyue", "bow", true),
 ("Tartaglia", 1.1, "hydro", "snezhnaya", "bow", true),
 ("Arlecchino", 4.6, "pyro", "snezhnaya", "polearm", true),
 ("Sayu", 2.0, "anemo", "inazuma", "claymore", false),
@@ -117,7 +116,7 @@ insert into characters (character_name, version, element, nation, weapon, isFive
 ("Jahoda", 6.2, "anemo", "nod_krai", "bow", false),
 ("Ineffa", 5.8, "electro", "nod_krai", "polearm", true),
 ("Lauma", 6.0, "dentro", "nod_krai", "catalyst", true),
-("Kyrryl Chudomirovich Flins", 6.0, "electro", "nod_krai", "polearm", true),
+("Flins", 6.0, "electro", "nod_krai", "polearm", true),
 ("Nefer", 6.1, "dentro", "nod_krai", "catalyst", true),
 ("Columbina", 6.3, "hydro", "nod_krai", "polearm", true);
 
@@ -133,10 +132,10 @@ values("Anemo"),("Geo"),("Electro"),("Dentro"),("Hydro"),("Pyro"),("Cryo");
 drop table if exists nations;
 create table nations(
 	nations_id int primary key auto_increment,
-    nations_name varchar(12)
+    nation_name varchar(12)
 );
 
-insert into nations (nations_name)
+insert into nations (nation_name)
 values	("Monstadt"),
 		("Liyue"),
 		("Outside"),

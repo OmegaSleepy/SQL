@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class Log {
@@ -15,6 +16,7 @@ public class Log {
     private static final String GREEN = "\u001B[32m";
     private static final String BLUE  = "\u001B[34m";
     private static final String RED   = "\u001B[31m";
+    private static final String YELLOW   = "\u001B[33m";
 
 
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -28,7 +30,7 @@ public class Log {
 
         if(!folder.exists() || !folder.isDirectory()) return;
 
-        for (File file: folder.listFiles()){
+        for (File file: Objects.requireNonNull(folder.listFiles())){
             if (file == null) {
                 return;
             }
@@ -49,6 +51,9 @@ public class Log {
     public static void error(String message){
         log(message, RED);
     }
+    public static void special(String message){
+        log(message, YELLOW);
+    }
 
 
     public static void saveToFile () {
@@ -67,7 +72,7 @@ public class Log {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to save log file", e);
+            CrashUtil.crashHandler(e);
         }
     }
 
@@ -76,10 +81,10 @@ public class Log {
         message = message.replace(RED, "ERROR ");
         message = message.replace(BLUE, "EXEC ");
         message = message.replace(GREEN, "INFO ");
+        message = message.replace(YELLOW, "IMPORTANT ");
 
         return message;
     }
-
 
     private static void log(String message, String color) {
         String timestamp = "[" + LocalDateTime.now().format(TIME) + "] ";
@@ -91,15 +96,8 @@ public class Log {
         buffer.add(color + timestamp + message);
     }
 
-    public static Consumer<String> logSimple = string -> {
-        String timestamp = LocalDateTime.now().format(TIME);
-        String timeTag = RED + "[" + timestamp + "]" + RESET;
 
-        info(timeTag + " " + string);
-
-    };
-
-    public static Consumer<List<String[]>> logSelect = rows -> {
+    public static final Consumer<List<String[]>> logSelect = rows -> {
 
         if (rows == null) {
             error(" (no results)");
@@ -135,5 +133,5 @@ public class Log {
     };
 
     // Consumer for SQL code execution (CREATE, INSERT, UPDATE, DELETE)
-    public static Consumer<String> logSQL = Log::exec;
+    public static final Consumer<String> logSQL = Log::exec;
 }
