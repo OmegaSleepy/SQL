@@ -10,19 +10,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import static sql.ConstantsKt.*;
+
 public class Log {
 
-    private static final String RESET = "\u001B[0m";
-    private static final String GREEN = "\u001B[32m";
-    private static final String BLUE  = "\u001B[34m";
-    private static final String RED   = "\u001B[31m";
-    private static final String YELLOW   = "\u001B[33m";
-
-
-    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm:ss:ms");
     private static final DateTimeFormatter FILE = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
-    private static final String LOG_DIR = "logs";
     private static final List<String> buffer = new ArrayList<>();
 
     public static void clearLogs(){
