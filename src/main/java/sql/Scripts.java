@@ -5,6 +5,8 @@ import game.Holder;
 
 import java.sql.SQLException;
 
+import static sql.Log.*;
+
 public class Scripts {
 
     static void dropEverything(){
@@ -23,11 +25,11 @@ public class Scripts {
         try {
             SqlConnection.connection.close();
         } catch (SQLException e) {
-            CrashUtil.crashHandler(e);
+            CrashUtil.crash(e);
         }
 
-        Log.info("End of program");
-        Log.info("Program took %f seconds to execute".formatted((end - start)*1e-9));
+        info("End of program");
+        info("Program took %f seconds to execute".formatted((end - start)*1e-9));
         Log.saveToFile();
 
     }

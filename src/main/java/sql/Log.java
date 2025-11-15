@@ -14,8 +14,7 @@ import static sql.ConstantsKt.*;
 
 public class Log {
 
-    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm:ss:ms");
-    private static final DateTimeFormatter FILE = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+
 
     private static final List<String> buffer = new ArrayList<>();
 
@@ -91,26 +90,36 @@ public class Log {
             File dir = new File(LOG_DIR);
             if (!dir.exists()) dir.mkdir();
 
-            String filename = LocalDateTime.now().format(FILE) + ".log";
+            String filename = LocalDateTime.now().format(Objects.requireNonNull(getFILE())) + ".log";
             File file = new File(dir, filename);
+            File latest = new File(dir, "latest.log");
             file.createNewFile();
+            latest.createNewFile();
 
-            try (FileWriter writer = new FileWriter(file)) {
+            info(getLogVersion());
+            info(getLogCount());
 
-                info(getLogVersion());
-                info(getLogCount());
-                info("Saved to < %s >".formatted(filename));
+            writeToFile(file).createNewFile();
+            writeToFile(latest).createNewFile();
 
-                for (String line : buffer) {
-                    writer.write(stripAnsi(line) + System.lineSeparator());
-                }
+            info("Saved log to %s".formatted(dir + File.separator + filename));
 
-            }
 
         } catch (IOException e) {
-            CrashUtil.crashHandler(e);
+            CrashUtil.crash(e);
         }
 
+    }
+
+    private static File writeToFile(File file){
+        try (FileWriter writer = new FileWriter(file)) {
+            for (String line : buffer) {
+                writer.write(stripAnsi(line) + System.lineSeparator());
+            }
+        } catch (IOException e) {
+            CrashUtil.crash(e);
+        }
+        return file;
     }
 
     private static String getLogVersion () {
@@ -135,7 +144,7 @@ public class Log {
     }
 
     private static void log (String message, String color) {
-        String timestamp = "[" + LocalDateTime.now().format(TIME) + "] ";
+        String timestamp = "[" + LocalDateTime.now().format(Objects.requireNonNull(getTIME())) + "] ";
 
         // Console (colored)
         System.out.println(color + timestamp + RESET + message);

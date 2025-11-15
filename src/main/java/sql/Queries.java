@@ -47,7 +47,7 @@ public class Queries {
         try {
             scanner = new Scanner(file);
         } catch (FileNotFoundException e) {
-            CrashUtil.crashHandler(e);
+            CrashUtil.crash(e);
         }
 
         while (true) {
@@ -67,7 +67,7 @@ public class Queries {
         File sequenceTXT = new File(dir + "/sequence.txt");
         
         if(!files.contains(sequenceTXT)){
-            CrashUtil.crashHandler(new RuntimeException("You must have a sequence.txt in a sequence line"));
+            CrashUtil.crash(new RuntimeException("You must have a sequence.txt in a sequence line"));
         }
 
         try (Scanner scanner = new Scanner(sequenceTXT)){
@@ -93,7 +93,7 @@ public class Queries {
             for (String fileName : sequenceLine) {
                 File file = filesMap.get(fileName + ".txt");
                 if (file == null) {
-                    CrashUtil.crashHandler(new RuntimeException("File not found: " + fileName + ".txt"));
+                    CrashUtil.crash(new RuntimeException("File not found: " + fileName + ".txt"));
                 }
                 answers.add(queryFromFile(file));
             }
@@ -101,7 +101,7 @@ public class Queries {
             return answers;
 
         } catch (FileNotFoundException e) {
-            CrashUtil.crashHandler(e);
+            CrashUtil.crash(e);
         }
 
         return null;
@@ -131,7 +131,7 @@ public class Queries {
             } else if (first.length < second.length) {
                 return -1;
             }
-            CrashUtil.crashHandler(new RuntimeException("You cannot have files with the same name in a sequence: " + o1.getName()));
+            CrashUtil.crash(new RuntimeException("You cannot have files with the same name in a sequence: " + o1.getName()));
             return 0;
 
         });
@@ -150,12 +150,12 @@ public class Queries {
     @Nullable
     private static boolean isValid (File dir) {
         if(!dir.exists()) {
-            CrashUtil.crashHandler(new RuntimeException("A sequence, with this name \"" + dir + "\" , does not exist"));
+            CrashUtil.crash(new RuntimeException("A sequence, with this name \"" + dir + "\" , does not exist"));
             return false;
         }
 
         if(!dir.isDirectory()){
-            CrashUtil.crashHandler(new RuntimeException("This is not a directory"));
+            CrashUtil.crash(new RuntimeException("This is not a directory"));
             return false;
         }
 
@@ -175,7 +175,7 @@ public class Queries {
             }
 
         } catch (SQLException e) {
-            CrashUtil.crashHandler(e);
+            CrashUtil.catchError(e);
         }
 
         return null;
