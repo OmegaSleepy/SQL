@@ -5,7 +5,9 @@ package sql;
  * @see Log
  * */
 public class CrashUtil {
-    
+
+    private CrashUtil(){}
+
     /**
      * Logging errors with this method will end the program, due to it saving and throwing the error.
      * @see Log#error(String) 

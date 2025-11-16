@@ -6,6 +6,8 @@ import static sql.ConstantsKt.*;
 
 public class SqlConnection {
 
+    private SqlConnection(){}
+
     public static final java.sql.Connection connection;
 
     static {

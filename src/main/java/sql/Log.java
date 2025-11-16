@@ -24,6 +24,8 @@ import static sql.ConstantsKt.*;
  * */
 public class Log {
 
+    private Log(){}
+
 
     /**
      * Holds all logged information for {@code saveToFile} to write to a log and the latest log

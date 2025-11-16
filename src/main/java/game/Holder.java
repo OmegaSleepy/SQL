@@ -6,6 +6,8 @@ import java.util.List;
 
 public class Holder {
 
+    private Holder(){}
+
     static String[] weapons;
     static String[] elements;
     static String[] nations;

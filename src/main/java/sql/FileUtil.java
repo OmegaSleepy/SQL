@@ -6,6 +6,8 @@ import java.net.URL;
 
 public class FileUtil {
 
+    private FileUtil(){}
+
     public static File getFile (String fileName) {
         URL url = SqlConnection.class.getClassLoader().getResource(fileName);
         assert url != null;

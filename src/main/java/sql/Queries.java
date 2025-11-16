@@ -27,6 +27,8 @@ import static sql.SqlConnection.connection;
  * */
 public class Queries {
 
+    private Queries(){}
+
     public static ArrayList<String[]> queryResult (String fullSql) {
 
         String[] statements = fullSql.split(";");

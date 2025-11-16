@@ -9,6 +9,8 @@ import static sql.Log.*;
 
 public class Scripts {
 
+    private Scripts(){}
+
     static void dropEverything(){
         Queries.queryFromFile(FileUtil.getScriptFile("premade/drop.txt"));
     }

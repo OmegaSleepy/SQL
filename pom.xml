@@ -48,6 +48,8 @@
         </dependency>
 
 
+
+
     </dependencies>
 
     <build>
@@ -82,6 +84,28 @@
                     <jvmTarget>${maven.compiler.target}</jvmTarget>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.jetbrains.dokka</groupId>
+                <artifactId>dokka-maven-plugin</artifactId>
+                <version>1.9.20</version>
+
+                <executions>
+
+                    <!-- Generate Javadoc-style HTML (optional, experimental) -->
+                    <execution>
+                        <id>dokka-javadoc</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+            </plugin>
+
+
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
