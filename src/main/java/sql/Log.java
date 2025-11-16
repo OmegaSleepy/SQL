@@ -1,5 +1,7 @@
 package sql;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -127,13 +129,10 @@ public class Log {
     }
 
 
-
     static int infoCount;
     static int execCount;
-    static int errorCount;
     static int warnCount;
-    @Deprecated
-    static int specialCount;
+    static int errorCount;
 
     /**
      * Saves {@code buffer} to two .log files. One is named with a timestamp and the second is latest.log.
@@ -213,8 +212,8 @@ public class Log {
      * @see #warn(String message)
           * */
     private static String getLogCount () {
-        return "INFO=%d | EXEC=%d | WARN=%d | ERROR=%d | SPECIAL=%d"
-                .formatted(infoCount, execCount, errorCount, warnCount, specialCount);
+        return "INFO=%d | EXEC=%d | WARN=%d | ERROR=%d"
+                .formatted(infoCount, execCount, errorCount, warnCount);
     }
 
     /**
@@ -229,6 +228,7 @@ public class Log {
     //TODO make my mind on what yellow should be and if I need "special" log entries
     public static String stripAnsi (String message) {
 
+        //No need for more log message types
         message = message.replace(RED, "[ERROR] ");
         message = message.replace(BLUE, "[EXEC] ");
         message = message.replace(GREEN, "[INFO] ");
@@ -247,9 +247,11 @@ public class Log {
     private static void log (String message, String color) {
         String timestamp = "[" + LocalDateTime.now().format(Objects.requireNonNull(getTIME())) + "] ";
 
-        // Console (colored)
+        // Print to console (colored)
         System.out.println(color + timestamp + RESET + message);
-
+        //Saving without RESET ensures we don't have to remove it later when saving to a file
+        //Still adding color so we can replace that with capitalized MESSAGE
+        //Yes OOP can be used here to replace the color value, but that will cause speed problems and will not benefit the program in any way
         buffer.add(color + timestamp + message);
     }
 
@@ -261,32 +263,53 @@ public class Log {
 
         if (rows == null || rows.isEmpty()) return;
 
+
+        //Sometimes queryResult can return malformed data with inconsistent column count,
+        // this code block ensures that the absolute max is found
+
         int columns = rows.stream()
                 .mapToInt(r -> r.length)
                 .max()
                 .orElse(0);
 
-        int[] maxWidths = new int[columns];
+
+        int[] maxWidthPerCell = new int[columns];
 
         // compute max width for each column
         for (String[] row : rows) {
             for (int i = 0; i < columns; i++) {
+                //if the row cell is null or is out of scope for the row then make it null, otherwise get the value
                 String cell = (i < row.length && row[i] != null) ? row[i] : "null";
-                maxWidths[i] = Math.max(maxWidths[i], cell.length());
+                maxWidthPerCell[i] = Math.max(maxWidthPerCell[i], cell.length());
             }
         }
 
         // print rows with proper alignment
         for (String[] row : rows) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < columns; i++) {
-                String cell = (i < row.length && row[i] != null) ? row[i] : "null";
-                sb.append(String.format("%-" + maxWidths[i] + "s", cell));
-                if (i < columns - 1) sb.append(" | ");
-            }
-            info(sb.toString());
+
+            StringBuilder formattedRow = getSpaceFormatedString(row, columns, maxWidthPerCell);
+
+            info(formattedRow.toString());
         }
     };
+
+    /**
+     * Generates a well formated view for a row with some size
+     * @see #logSelect
+     * */
+    private static StringBuilder getSpaceFormatedString (String[] row, int columns, int[] maxWidthPerCell) {
+        StringBuilder formattedRow = new StringBuilder();
+
+        for (int i = 0; i < columns; i++) {
+            //if the row cell is null or is out of scope for the row then make it null, otherwise get the value
+            String cell = (i < row.length && row[i] != null) ? row[i] : "null";
+            //Add spaces to fill the printed cell with enough white space so the vertical lines match
+            formattedRow.append(String.format("%-" + maxWidthPerCell[i] + "s", cell));
+            //if it is not the last cell, append a vertical line
+            if (i < columns - 1) formattedRow.append(" | ");
+        }
+        return formattedRow;
+    }
 
 
     /**
