@@ -18,7 +18,7 @@ import static sql.ConstantsKt.*;
  * @see #buffer
  * @see #log(String, String)
  * @see #logSelect
- * @see #saveToFile()
+ * @see #saveLogFiles()
  * @see #cleanUp()
  * @see #clearAllLogs()
  * */
@@ -28,7 +28,7 @@ public class Log {
 
 
     /**
-     * Holds all logged information for {@code saveToFile} to write to a log and the latest log
+     * Holds all logged information for {@code saveLogFiles} to write to a log and the latest log
      * @see #writeToFile(File)
      * @see #log(String, String)
      * */
@@ -85,33 +85,62 @@ public class Log {
 
     }
 
+    /**
+     * Logs info action with {@code GREEN} color, check the constants .kt file for the value
+     * @see ConstantsKt#GREEN
+     * @see #log(String message, String color)
+     * */
     public static void info (String message) {
         log(message, GREEN);
         infoCount++;
     }
 
+    /**
+        * Logs execution action with {@code BLUE} color, check the constants .kt file for the value
+        * @see ConstantsKt#BLUE
+        * @see #log(String message, String color)
+     * */
     public static void exec (String message) {
         log(message, BLUE);
         execCount++;
     }
 
-    public static void error (String message) {
-        log(message, RED);
-        errorCount++;
-    }
+    /**
+     * Logs warn action with {@code YELLOW} color, check the constants .kt file for the value
+     * @see ConstantsKt#YELLOW
+     * @see #log(String message, String color)
+     * */
 
     public static void warn (String message) {
         log(message, YELLOW);
         warnCount++;
     }
 
+    /**
+     * Logs error action with {@code RED} color, check the constants .kt file for the value
+     * @see ConstantsKt#RED
+     * @see #log(String message, String color)
+     * */
+    public static void error (String message) {
+        log(message, RED);
+        errorCount++;
+    }
+
+
+
     static int infoCount;
     static int execCount;
     static int errorCount;
     static int warnCount;
+    @Deprecated
     static int specialCount;
 
-    public static void saveToFile () {
+    /**
+     * Saves {@code buffer} to two .log files. One is named with a timestamp and the second is latest.log.
+     * @see #buffer
+     * @see #writeToFile
+     * */
+    public static void saveLogFiles () {
 
         try {
             File dir = new File(LOG_DIR);
@@ -148,6 +177,12 @@ public class Log {
 
     }
 
+    /**
+     * Writes the {@code buffer} values into a {@code .log} file and returns the file. It replaces the ansi color codes with words
+     * @return File {@code .log}
+     * @see #stripAnsi(String message)
+     * @see #saveLogFiles()
+     * */
     private static File writeToFile(File file){
         try (FileWriter writer = new FileWriter(file)) {
             for (String line : buffer) {
@@ -159,27 +194,56 @@ public class Log {
         return file;
     }
 
+    /**
+     * Returns the log version in a neat format from the constants .kt file
+     * @see ConstantsKt#LOG_VERSION
+     * */
     private static String getLogVersion () {
         return "LOG VERSION=%s | LOG DIR=%s "
                 .formatted(LOG_VERSION, LOG_DIR);
     }
 
+    /**
+     * Returns the total amount of all log lines by type in a neat format
+     * @return String logCount
+     * @see #saveLogFiles()
+     * @see #info(String message)
+     * @see #exec(String message)
+     * @see #error(String message)
+     * @see #warn(String message)
+          * */
     private static String getLogCount () {
-        return "INFO=%d | EXEC=%d | ERROR=%d | SPECIAL=%d"
-                .formatted(infoCount, execCount, errorCount, specialCount);
+        return "INFO=%d | EXEC=%d | WARN=%d | ERROR=%d | SPECIAL=%d"
+                .formatted(infoCount, execCount, errorCount, warnCount, specialCount);
     }
 
+    /**
+     * Used in {@code .log} file creation. Removes Ansi values and replaces them with {@code String} values
+     * @see #saveLogFiles()
+     * @see #info(String message)
+     * @see #exec(String message)
+     * @see #error(String message)
+     * @see #warn(String message)
+     * */
 
+    //TODO make my mind on what yellow should be and if I need "special" log entries
     public static String stripAnsi (String message) {
 
-        message = message.replace(RED, "ERROR ");
-        message = message.replace(BLUE, "EXEC ");
-        message = message.replace(GREEN, "INFO ");
-        message = message.replace(YELLOW, "IMPORTANT ");
+        message = message.replace(RED, "[ERROR] ");
+        message = message.replace(BLUE, "[EXEC] ");
+        message = message.replace(GREEN, "[INFO] ");
+        message = message.replace(YELLOW, "[WARN] ");
 
         return message;
     }
 
+    /**
+     * Saves an action {@code String} with a specific colored timestamp. Methods bellow are use-cases with specific color timestamps
+     * @see #info(String message)
+     * @see #exec(String message)
+     * @see #error(String message)
+     * @see #warn(String message)
+     * */
     private static void log (String message, String color) {
         String timestamp = "[" + LocalDateTime.now().format(Objects.requireNonNull(getTIME())) + "] ";
 
@@ -189,7 +253,10 @@ public class Log {
         buffer.add(color + timestamp + message);
     }
 
-
+    /**
+     * Method used for quick and pretty display printing of {@code SELECT} type queries, usually directly called from {@code selectOperation}
+     * @see Queries#queryResult(String SQL)
+     * */
     public static final Consumer<List<String[]>> logSelect = rows -> {
 
         if (rows == null || rows.isEmpty()) return;
@@ -222,6 +289,9 @@ public class Log {
     };
 
 
-    // Consumer for SQL code execution (CREATE, INSERT, UPDATE, DELETE)
+    /**
+     * Consumer for SQL code execution (CREATE, INSERT, UPDATE, DELETE).
+     * @see Queries#executeExpression(String query)
+     * */
     public static final Consumer<String> logSQL = Log::exec;
 }

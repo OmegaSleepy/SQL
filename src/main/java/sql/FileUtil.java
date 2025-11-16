@@ -8,15 +8,15 @@ public class FileUtil {
 
     private FileUtil(){}
 
-    public static File getFile (String fileName) {
+    public static File getResourceFile (String fileName) {
         URL url = SqlConnection.class.getClassLoader().getResource(fileName);
         assert url != null;
-        File file;
+        File file = null;
 
         try {
             file = new File(url.toURI());
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            CrashUtil.crash(e);
         }
 
         return file;
@@ -25,13 +25,13 @@ public class FileUtil {
     public static File getLineFile (String fileName){
         fileName = "scripts/line/" + fileName;
 
-        return getFile(fileName);
+        return getResourceFile(fileName);
     }
 
     public static File getScriptFile (String fileName){
         fileName = "scripts/" + fileName;
 
-        return getFile(fileName);
+        return getResourceFile(fileName);
 
     }
 

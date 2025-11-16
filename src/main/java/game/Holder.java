@@ -12,7 +12,7 @@ public class Holder {
     static String[] elements;
     static String[] nations;
 
-    public static void innitialize (){
+    public static void initialize (){
         weapons = getValues("weapon");
         elements = getValues("element");
         nations = getValues("nation");

@@ -30,6 +30,6 @@ const val LOG_VERSION = "0.6.0"
 const val MAX_LOGS = 32
 /**
  * Directory of where logs are saved
- * @see Log.saveToFile
+ * @see Log.saveLogFiles
  * */
 const val LOG_DIR = "logs"

@@ -32,7 +32,7 @@ public class Scripts {
 
         info("End of program");
         info("Program took %f seconds to execute".formatted((end - start)*1e-9));
-        Log.saveToFile();
+        Log.saveLogFiles();
 
     }
 
@@ -42,7 +42,7 @@ public class Scripts {
 
     static void initialize (){
         GenshinCharacter.getAllCharacters();
-        Holder.innitialize();
+        Holder.initialize();
     }
 
     static void runSequence (){
