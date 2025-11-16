@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -12,13 +11,33 @@ import java.util.function.Consumer;
 
 import static sql.ConstantsKt.*;
 
+
+/**
+ * Simple class aimed at logging all activities of the program, holds an internal buffer, saves all logged actions during program execution, displays select queries,
+ * clears old logs
+ * @see #buffer
+ * @see #log(String, String)
+ * @see #logSelect
+ * @see #saveToFile()
+ * @see #cleanUp()
+ * @see #clearAllLogs()
+ * */
 public class Log {
 
 
-
+    /**
+     * Holds all logged information for {@code saveToFile} to write to a log and the latest log
+     * @see #writeToFile(File)
+     * @see #log(String, String)
+     * */
     private static final List<String> buffer = new ArrayList<>();
 
-    public static void deleteLogs () {
+    /**
+     * Deletes all logs in the {@code LOG_DIR} folder. For chronological deletion check {@code cleanUP}
+     * @see ConstantsKt#LOG_DIR
+     * @see #cleanUp()
+     * */
+    public static void clearAllLogs () {
         File folder = new File(LOG_DIR);
 
         if (!folder.exists() || !folder.isDirectory()) return;
@@ -33,7 +52,13 @@ public class Log {
         }
         Log.warn("Cleared logs");
     }
-
+    /**
+     * Deletes all logs in the {@code LOG_DIR} folder based on how old they are. It will delete enough files so there are less or equal to {@code MAX_LOGS}.
+     * For full clean-up, check {@code clearAllLogs}
+     * @see #clearAllLogs()
+     * @see ConstantsKt#LOG_DIR
+     * @see ConstantsKt#MAX_LOGS
+     * */
     public static void cleanUp () {
         File folder = new File(LOG_DIR);
 
@@ -88,13 +113,22 @@ public class Log {
 
         try {
             File dir = new File(LOG_DIR);
-            if (!dir.exists()) dir.mkdir();
+            if (!dir.exists()) {
+                if (dir.mkdir()) {
+                    info("Log folder generated at %s".formatted(dir.getAbsolutePath()));
+                }
+            }
 
             String filename = LocalDateTime.now().format(Objects.requireNonNull(getFILE())) + ".log";
             File file = new File(dir, filename);
             File latest = new File(dir, "latest.log");
-            file.createNewFile();
-            latest.createNewFile();
+
+            if(file.createNewFile()) {
+                info("Created log file at %s".formatted(file.getAbsolutePath()));
+            }
+            if(latest.createNewFile()) {
+                info("Created latest log file at %s".formatted(file.getAbsolutePath()));
+            }
 
             info(getLogVersion());
             info(getLogCount());
@@ -103,6 +137,7 @@ public class Log {
             writeToFile(latest).createNewFile();
 
             info("Saved log to %s".formatted(dir + File.separator + filename));
+            info("Saved latest to %s".formatted(latest + File.separator + filename));
 
 
         } catch (IOException e) {

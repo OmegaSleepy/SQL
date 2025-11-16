@@ -22,5 +22,14 @@ val FILE: DateTimeFormatter? = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"
 
 //==========OTHER INFO===========
 const val LOG_VERSION = "0.6.0"
+/**
+ * Limit of the maximal count of log files saved in the logs folder.
+ * @see LOG_DIR
+ * @see Log.cleanUp
+ * */
 const val MAX_LOGS = 32
+/**
+ * Directory of where logs are saved
+ * @see Log.saveToFile
+ * */
 const val LOG_DIR = "logs"

@@ -1,7 +1,5 @@
 package sql;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
@@ -15,6 +13,18 @@ import static sql.Log.info;
 import static sql.Log.logSQL;
 import static sql.SqlConnection.connection;
 
+/**
+ * Holds {@code static} methods for easy and safe querying
+ * @see #queryResult(String)
+ *
+ * @see #executeExpression(String)
+ * @see #selectOperation(PreparedStatement)
+ *
+ * @see #queryFromFile(File)
+
+ * @see #queryFromSequence(File)
+ * @see #queryFromLine(File)
+ * */
 public class Queries {
 
     public static ArrayList<String[]> queryResult (String fullSql) {
@@ -32,7 +42,6 @@ public class Queries {
             Log.logSelect.accept(result);
 
         }
-
 
         return result;
     }
@@ -147,7 +156,6 @@ public class Queries {
 
     }
 
-    @Nullable
     private static boolean isValid (File dir) {
         if(!dir.exists()) {
             CrashUtil.crash(new RuntimeException("A sequence, with this name \"" + dir + "\" , does not exist"));

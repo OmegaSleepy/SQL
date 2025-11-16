@@ -35,7 +35,7 @@ public class Scripts {
     }
 
     static void clearLogs(){
-        Log.deleteLogs();
+        Log.clearAllLogs();
     }
 
     static void initialize (){
