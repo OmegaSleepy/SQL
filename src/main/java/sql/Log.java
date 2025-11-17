@@ -1,7 +1,5 @@
 package sql;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -225,14 +223,13 @@ public class Log {
      * @see #warn(String message)
      * */
 
-    //TODO make my mind on what yellow should be and if I need "special" log entries
     public static String stripAnsi (String message) {
 
         //No need for more log message types
-        message = message.replace(RED, "[ERROR] ");
-        message = message.replace(BLUE, "[EXEC] ");
         message = message.replace(GREEN, "[INFO] ");
+        message = message.replace(BLUE, "[EXEC] ");
         message = message.replace(YELLOW, "[WARN] ");
+        message = message.replace(RED, "[ERROR] ");
 
         return message;
     }

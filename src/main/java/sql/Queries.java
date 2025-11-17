@@ -1,5 +1,7 @@
 package sql;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
@@ -29,6 +31,13 @@ public class Queries {
 
     private Queries(){}
 
+    /**
+     * Splits a SQL query to single line queries and parses them to another method. This is in line and should not be changed.
+     * @see #executeExpression(String query)
+     * @see SqlConnection
+     * @see Log#logSelect
+     * */
+    @Nullable
     public static ArrayList<String[]> queryResult (String fullSql) {
 
         String[] statements = fullSql.split(";");
@@ -48,6 +57,11 @@ public class Queries {
         return result;
     }
 
+    /**
+     * Used to execute sql queries from a file in the resource folder. Should be used in combination with {@code FileUtil}.
+     * @see FileUtil#getResourceFile(String fileName)
+     * @see #queryResult(String fullSQL)
+     * **/
     public static ArrayList<String[]> queryFromFile (File file) {
 
         StringBuilder query = new StringBuilder();
@@ -70,6 +84,16 @@ public class Queries {
 
     }
 
+    /**
+     * Used to execute multiple .txt files containing sql scripts. Imputed dir should be in {@code resources/scripts/line/}
+     * All sequence line folders should contain sequence.txt that must follow this format:
+     * <div style="margin:0px">
+     *     <p>{@code <\Script1\>.txt, <\Script2\>.txt...}</p>
+     * </div>
+     * Files can be named anything, but they must be a .txt file.
+     * @see #queryFromFile(File file)
+     * @see #isValid(File dir) 
+     * **/
     public static ArrayList<ArrayList<String[]>> queryFromSequence (File dir){
         if (!isValid(dir)) return null;
 
@@ -158,6 +182,10 @@ public class Queries {
 
     }
 
+    /**
+     * Used to determine if the sequence folder has a {@code sequence.txt} file or not.
+     * @see #queryFromSequence(File dir) 
+     * **/
     private static boolean isValid (File dir) {
         if(!dir.exists()) {
             CrashUtil.crash(new RuntimeException("A sequence, with this name \"" + dir + "\" , does not exist"));
@@ -172,6 +200,14 @@ public class Queries {
         return true;
     }
 
+    /**
+     * Used to connect to the DB and decide which operation should be executed. Either {@code selectOperation} or {@code executeUpdate}.
+     * The select operation should be used only for select type operations.
+     * The execute update method for anything else.
+     * @see #queryResult(String fullSQL)
+     * @see #selectOperation(PreparedStatement statement)
+     * @see PreparedStatement
+     * **/
     private static ArrayList<String[]> executeExpression (String query) {
 
         logSQL.accept(query);
@@ -185,13 +221,19 @@ public class Queries {
             }
 
         } catch (SQLException e) {
-            CrashUtil.catchError(e);
+            CrashUtil.crash(e);
         }
 
         return null;
 
     }
 
+    /**
+     * This method is used to obtain all values from a table and puts them into a {@code ArrayList} for each row. All value
+     * are saved as {@code String}
+     * @see #executeExpression(String query)
+     * @see ResultSet
+     * **/
     private static ArrayList<String[]> selectOperation (PreparedStatement statement) throws SQLException {
         var result = new ArrayList<String[]>();
 
