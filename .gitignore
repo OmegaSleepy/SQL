@@ -40,3 +40,4 @@ build/
 
 ### OTHER ###
 .log
+/src/main/java/sql/Credentials.kt
