@@ -2,6 +2,6 @@ package sql
 //DO NOT COMMIT CHANGES
 
 //===========SQL===========
-const val url = "jdbc:mysql://localhost:3306/genshin"
-const val user = "root"
-const val password = ""
+const val url = "jdbc:mysql://*"
+const val user = "*"
+const val password = "*"
