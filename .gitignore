@@ -39,5 +39,4 @@ build/
 .DS_Store
 
 ### OTHER ###
-.log
-/src/main/java/sql/Credentials.kt
+logs/
