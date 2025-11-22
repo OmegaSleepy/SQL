@@ -15,8 +15,8 @@ public class CrashUtil {
      * **/
     public static void crash (Exception e){
         Log.error(e.getMessage());
-        Log.error("PROJECT CRASHED");
-        Script.endScript(SqlConnection.SYSTEM_START, System.nanoTime());
+        Log.error("LIBRARY CRASHED");
+        Script.endScript(SqlConnection.LIBRARY_START, System.nanoTime());
         throw new RuntimeException(e);
     }
     /**

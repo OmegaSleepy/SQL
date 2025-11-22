@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import static sql.ConstantsKt.*;
+import static sql.Settings.*;
 
 
 /**
@@ -24,6 +24,10 @@ import static sql.ConstantsKt.*;
  * */
 public class Log {
 
+    public static final String LOG_VERSION = "1.2.0";
+    public static final int MAX_LOGS = 32;
+    public static final String LOG_DIR = "logs";
+
     private Log(){}
 
     /**
@@ -35,7 +39,7 @@ public class Log {
 
     /**
      * Deletes all logs in the {@code LOG_DIR} folder. For chronological deletion check {@code cleanUP}
-     * @see ConstantsKt#LOG_DIR
+     * @see #LOG_DIR
      * @see #cleanUp()
      * */
     public static void clearAllLogs () {
@@ -57,8 +61,8 @@ public class Log {
      * Deletes all logs in the {@code LOG_DIR} folder based on how old they are. It will delete enough files so there are less or equal to {@code MAX_LOGS}.
      * For full clean-up, check {@code clearAllLogs}
      * @see #clearAllLogs()
-     * @see ConstantsKt#LOG_DIR
-     * @see ConstantsKt#MAX_LOGS
+     * @see #LOG_DIR
+     * @see #MAX_LOGS
      * */
     public static void cleanUp () {
         File folder = new File(LOG_DIR);
@@ -86,7 +90,7 @@ public class Log {
 
     /**
      * Logs info action with {@code GREEN} color, check the constants .kt file for the value
-     * @see ConstantsKt#GREEN
+     * @see Settings#GREEN
      * @see #log(String message, String color)
      * */
     public static void info (String message) {
@@ -96,7 +100,7 @@ public class Log {
 
     /**
         * Logs execution action with {@code BLUE} color, check the constants .kt file for the value
-        * @see ConstantsKt#BLUE
+        * @see Settings#BLUE
         * @see #log(String message, String color)
      * */
     public static void exec (String message) {
@@ -106,7 +110,7 @@ public class Log {
 
     /**
      * Logs warn action with {@code YELLOW} color, check the constants .kt file for the value
-     * @see ConstantsKt#YELLOW
+     * @see Settings#YELLOW
      * @see #log(String message, String color)
      * */
 
@@ -117,7 +121,7 @@ public class Log {
 
     /**
      * Logs error action with {@code RED} color, check the constants .kt file for the value
-     * @see ConstantsKt#RED
+     * @see Settings#RED
      * @see #log(String message, String color)
      * */
     public static void error (String message) {
@@ -146,7 +150,7 @@ public class Log {
                 }
             }
 
-            String filename = LocalDateTime.now().format(Objects.requireNonNull(getFILE())) + ".log";
+            String filename = LocalDateTime.now().format(Objects.requireNonNull(FILE)) + ".log";
             File file = new File(dir, filename);
             File latest = new File(dir, "latest.log");
 
@@ -192,7 +196,7 @@ public class Log {
 
     /**
      * Returns the log version in a neat format from the constants .kt file
-     * @see ConstantsKt#LOG_VERSION
+     * @see #LOG_VERSION
      * */
     private static String getLogVersion () {
         return "LOG VERSION=%s | LOG DIR=%s "
@@ -241,7 +245,7 @@ public class Log {
      * @see #warn(String message)
      * */
     private static void log (String message, String color) {
-        String timestamp = "[" + LocalDateTime.now().format(Objects.requireNonNull(getTIME())) + "] ";
+        String timestamp = "[" + LocalDateTime.now().format(Objects.requireNonNull(TIME)) + "] ";
 
         // Print to console (colored)
         System.out.println(color + timestamp + RESET + message);

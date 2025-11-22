@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import static sql.Log.info;
 import static sql.Log.logSQL;
+import static sql.Settings.logQueries;
+import static sql.Settings.logResults;
 import static sql.SqlConnection.connection;
 
 /**
@@ -28,9 +30,6 @@ import static sql.SqlConnection.connection;
  * @see #fromLine(File)
  * */
 public class Query {
-
-    public static boolean logQueries = true;
-    public static boolean logResults = true;
 
     private Query (){}
 
