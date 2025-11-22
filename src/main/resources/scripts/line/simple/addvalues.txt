@@ -1,2 +1,0 @@
-insert into menu (item_name, price)
-values ("burger", 3.20),("fries", 2.10),("cola", 1.99),("straw", 0.01),("ketchup", 10.00);

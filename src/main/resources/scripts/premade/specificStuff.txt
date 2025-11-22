@@ -1,3 +1,0 @@
-select character_name, version, element, weapon, nation from characters
-where (element != "hydro")
-order by element, version;

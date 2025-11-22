@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static sql.FileUtil.getResourceFile;
 import static sql.Log.info;
 import static sql.Log.logSQL;
 import static sql.Settings.logQueries;

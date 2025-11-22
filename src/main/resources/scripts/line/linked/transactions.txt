@@ -1,6 +1,0 @@
-create table if not exists transactions (
-    transaction_id int primary key auto_increment,
-    amount decimal(5,2),
-    customer_id INT,
-    foreign key(customer_id) references customers(customer_id)
-);

@@ -1,8 +1,0 @@
-use genshin;
-select character_name, version, element_name, weapon_name nation_name
-from characters
-inner join elements on characters.element = elements.element_name
-inner join nations on characters.nation = nations.nation_name
-inner join weapons on characters.weapon = weapons.weapon_name
-where version >= 1
-order by version;

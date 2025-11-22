@@ -22,7 +22,7 @@ public class FileUtil {
      * @see #getScriptFile(String fileName) 
      * */
     public static File getResourceFile (String fileName) {
-        URL url = SqlConnection.class.getClassLoader().getResource(fileName);
+        URL url = FileUtil.class.getClassLoader().getResource(fileName);
         assert url != null;
         File file = null;
 

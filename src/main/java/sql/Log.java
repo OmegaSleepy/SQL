@@ -28,6 +28,8 @@ public class Log {
     public static int MAX_LOGS = 32;
     public static String LOG_DIR = "logs";
 
+
+
     private Log(){}
 
     /**
@@ -317,4 +319,5 @@ public class Log {
      * @see Query#executeExpression(String query)
      * */
     public static final Consumer<String> logSQL = Log::exec;
+
 }

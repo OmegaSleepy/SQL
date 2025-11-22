@@ -12,6 +12,6 @@ public class Main {
         assert result != null;
         System.out.println((Arrays.toString(Query.extractColumn(result, 0))));
 
-        Script.endScript(SqlConnection.LIBRARY_START, System.nanoTime());
+        Script.end(SqlConnection.LIBRARY_START, System.nanoTime());
     }
 }

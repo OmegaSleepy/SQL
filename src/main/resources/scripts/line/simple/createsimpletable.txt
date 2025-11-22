@@ -1,5 +1,0 @@
-create table menu(
-    item_id int primary key auto_increment,
-    item_name varChar(32),
-    price decimal(5,2)
-);
