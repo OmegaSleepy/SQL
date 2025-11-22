@@ -1,7 +1,9 @@
 package sql;
 
+import java.io.File;
+
 /**
- * Simple class with methods aimed at logging erros and crashes so the Logger can safely record all events
+ * Simple class with methods aimed at logging errors and crashes so the Logger can safely record all events
  * @see Log
  * */
 public class CrashUtil {
@@ -9,14 +11,14 @@ public class CrashUtil {
     private CrashUtil(){}
 
     /**
-     * Logging errors with this method will end the program, due to it saving and throwing the error.
+     * Logging errors with this method will end the program, due to it saving and throwing the error. Will also close the connection safely
      * @see Log#error(String) 
      * @see #catchError(Exception)
      * **/
     public static void crash (Exception e){
         Log.error(e.getMessage());
         Log.error("LIBRARY CRASHED");
-        Script.endScript(SqlConnection.LIBRARY_START, System.nanoTime());
+        Script.end(SqlConnection.LIBRARY_START, System.nanoTime());
         throw new RuntimeException(e);
     }
     /**
@@ -26,5 +28,17 @@ public class CrashUtil {
      * */
     public static void catchError (Exception e){
         Log.error(e.getMessage());
+    }
+
+    /**
+     * THIS will not close the connection. Logging errors with this method will end the program, due to it saving and throwing the error.
+     * @see Log#error(String)
+     * @see Credentials#inputCredentialFile(File)
+     * **/
+    public static void crashViolently(Exception e){
+        Log.error(e.getMessage());
+        Log.error("LIBRARY CRASHED");
+        Script.forceEnd(SqlConnection.LIBRARY_START, System.nanoTime());
+        throw new RuntimeException(e);
     }
 }

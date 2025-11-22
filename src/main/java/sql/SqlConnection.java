@@ -1,5 +1,6 @@
 package sql;
 
+import java.io.File;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,11 +26,15 @@ public class SqlConnection {
     public static final long LIBRARY_START = System.nanoTime();
 
     public static void initializeConnection(){
+        if(url.isEmpty() || username.isEmpty() || password.isEmpty()){
+            Credentials.inputCredentialFile(new File("credentials.txt"));
+        }
+
         try {
             connection = DriverManager.getConnection(url, username, password);
             Logger.getLogger("sqlite-jdbc").setLevel(Level.OFF);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            CrashUtil.crashViolently(e);
         }
     }
 
