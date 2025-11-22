@@ -17,7 +17,7 @@ val TIME: DateTimeFormatter? = DateTimeFormatter.ofPattern("HH:mm:ss:ms")
 val FILE: DateTimeFormatter? = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
 
 //===========OTHER INFO===========
-const val LOG_VERSION = "1.0.0"
+const val LOG_VERSION = "1.1.0"
 /**
  * Limit of the maximal count of log files saved in the logs folder.
  * @see LOG_DIR

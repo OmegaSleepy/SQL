@@ -19,9 +19,6 @@ public class Credentials {
             url = scanner.nextLine();
             username = scanner.nextLine();
             password = scanner.nextLine();
-            Log.info(url);
-            Log.info(username);
-            Log.info(password);
             Log.info("Loaded credentials from file.");
         } catch (Exception e){
             CrashUtil.crash(e);

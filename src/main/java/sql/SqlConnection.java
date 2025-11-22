@@ -9,7 +9,7 @@ import static sql.Credentials.*;
 /**
  * Holder class for the SQL Connection. Use this class' {@code static final connection} to access the server
  * @see #connection
- * @see Queries
+ * @see Query
  * **/
 public class SqlConnection {
 
@@ -18,7 +18,7 @@ public class SqlConnection {
     /**
      * Used to access the server
      * @see SqlConnection
-     * @see Queries
+     * @see Query
      * **/
     public static java.sql.Connection connection;
 

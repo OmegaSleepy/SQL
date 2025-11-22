@@ -253,7 +253,7 @@ public class Log {
 
     /**
      * Method used for quick and pretty display printing of {@code SELECT} type queries, usually directly called from {@code selectOperation}
-     * @see Queries#queryResult(String SQL)
+     * @see Query#getResult(String SQL)
      * */
     public static final Consumer<List<String[]>> logSelect = rows -> {
 
@@ -310,7 +310,7 @@ public class Log {
 
     /**
      * Consumer for SQL code execution (CREATE, INSERT, UPDATE, DELETE).
-     * @see Queries#executeExpression(String query)
+     * @see Query#executeExpression(String query)
      * */
     public static final Consumer<String> logSQL = Log::exec;
 }

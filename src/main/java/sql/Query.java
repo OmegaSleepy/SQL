@@ -17,19 +17,22 @@ import static sql.SqlConnection.connection;
 
 /**
  * Holds {@code static} methods for easy and safe querying
- * @see #queryResult(String)
+ * @see #getResult(String)
  *
  * @see #executeExpression(String)
  * @see #selectOperation(PreparedStatement)
  *
- * @see #queryFromFile(File)
+ * @see #fromFile(File)
 
- * @see #queryFromSequence(File)
- * @see #queryFromLine(File)
+ * @see #fromSequence(File)
+ * @see #fromLine(File)
  * */
-public class Queries {
+public class Query {
 
-    private Queries(){}
+    public static boolean logQueries = true;
+    public static boolean logResults = true;
+
+    private Query (){}
 
     /**
      * Splits a SQL query to single line queries and parses them to another method. This is in line and should not be changed.
@@ -38,7 +41,7 @@ public class Queries {
      * @see Log#logSelect
      * */
     @Nullable
-    public static ArrayList<String[]> queryResult (String fullSql) {
+    public static ArrayList<String[]> getResult (String fullSql) {
 
         String[] statements = fullSql.split(";");
 
@@ -50,7 +53,8 @@ public class Queries {
             if (query.isEmpty()) continue;
 
             result = executeExpression(query);
-            Log.logSelect.accept(result);
+
+            if(logResults) Log.logSelect.accept(result);
 
         }
 
@@ -60,14 +64,14 @@ public class Queries {
     /**
      * Used to execute sql queries from a file in the resource folder. Should be used in combination with {@code FileUtil}.
      * @see FileUtil#getResourceFile(String fileName)
-     * @see #queryResult(String fullSQL)
+     * @see #getResult(String fullSQL)
      * **/
-    public static ArrayList<String[]> queryFromFile (File file) {
+    public static ArrayList<String[]> fromFile (File file) {
 
         StringBuilder query = new StringBuilder();
         Scanner scanner = null;
 
-        info("Running query from " + file);
+        if (logQueries) info("Running query from " + file);
 
         try {
             scanner = new Scanner(file);
@@ -80,7 +84,7 @@ public class Queries {
             if (!scanner.hasNext()) break;
             query.append(scanner.next()).append(" ");
         }
-        return queryResult(query.toString());
+        return getResult(query.toString());
 
     }
 
@@ -91,10 +95,10 @@ public class Queries {
      *     <p>{@code <\Script1\>.txt, <\Script2\>.txt...}</p>
      * </div>
      * Files can be named anything, but they must be a .txt file.
-     * @see #queryFromFile(File file)
+     * @see #fromFile(File file)
      * @see #isValid(File dir) 
      * **/
-    public static ArrayList<ArrayList<String[]>> queryFromSequence (File dir){
+    public static ArrayList<ArrayList<String[]>> fromSequence (File dir){
         if (!isValid(dir)) return null;
 
         List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
@@ -130,7 +134,7 @@ public class Queries {
                 if (file == null) {
                     CrashUtil.crash(new RuntimeException("File not found: " + fileName + ".txt"));
                 }
-                answers.add(queryFromFile(file));
+                answers.add(fromFile(file));
             }
 
             return answers;
@@ -142,7 +146,7 @@ public class Queries {
         return null;
     }
 
-    public static ArrayList<ArrayList<String[]>> queryFromLine (File dir){
+    public static ArrayList<ArrayList<String[]>> fromLine (File dir){
 
         if (!isValid(dir)) return null;
 
@@ -174,7 +178,7 @@ public class Queries {
         var answers = new ArrayList<ArrayList<String[]>>();
 
         for (File queryFile: files){
-            answers.add(queryFromFile(queryFile));
+            answers.add(fromFile(queryFile));
         }
 
         return answers;
@@ -184,7 +188,7 @@ public class Queries {
 
     /**
      * Used to determine if the sequence folder has a {@code sequence.txt} file or not.
-     * @see #queryFromSequence(File dir) 
+     * @see #fromSequence(File dir)
      * **/
     private static boolean isValid (File dir) {
         if(!dir.exists()) {
@@ -204,13 +208,13 @@ public class Queries {
      * Used to connect to the DB and decide which operation should be executed. Either {@code selectOperation} or {@code executeUpdate}.
      * The select operation should be used only for select type operations.
      * The execute update method for anything else.
-     * @see #queryResult(String fullSQL)
+     * @see #getResult(String fullSQL)
      * @see #selectOperation(PreparedStatement statement)
      * @see PreparedStatement
      * **/
     private static ArrayList<String[]> executeExpression (String query) {
 
-        logSQL.accept(query);
+        if(logQueries) logSQL.accept(query);
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
 
@@ -261,4 +265,36 @@ public class Queries {
         }
         return result;
     }
+
+    /**
+     * This method is used to obtain a single column of a well-structured ArrayList result. 
+     * @see #extractColumns(ArrayList input, int[] columns) 
+     * **/
+    public static String[] extractColumn (ArrayList<String[]> input, int column){
+        ArrayList<String> result = new ArrayList<>();
+
+        for(String[] row: input){
+            result.add(row[column]);
+        }
+        //removing field name and an empty roll
+        result.removeFirst();
+        result.removeFirst();
+
+        return result.toArray(new String[0]);
+    }
+
+    /**
+     * This method is used to obtain multiple columns of a well-structured ArrayList result. 
+     * @see #extractColumn(ArrayList input, int column) 
+     * **/
+    public static String[][] extractColumns (ArrayList<String[]> input, int[] columns){
+        ArrayList<String[]> result = new ArrayList<>();
+
+        for(int i: columns){
+            result.add(extractColumn(input,i));
+        }
+
+        return result.toArray(new String[0][]);
+    }
+
 }
