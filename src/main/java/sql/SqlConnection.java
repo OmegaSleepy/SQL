@@ -22,7 +22,7 @@ public class SqlConnection {
      * **/
     public static java.sql.Connection connection;
 
-    public static final long SYSTEM_START = System.nanoTime();
+    public static final long LIBRARY_START = System.nanoTime();
 
     public static void initializeConnection(){
         try {
