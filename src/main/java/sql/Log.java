@@ -26,7 +26,6 @@ public class Log {
 
     private Log(){}
 
-
     /**
      * Holds all logged information for {@code saveLogFiles} to write to a log and the latest log
      * @see #writeToFile(File)
