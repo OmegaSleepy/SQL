@@ -15,35 +15,41 @@ import static sql.Settings.*;
 /**
  * Simple class aimed at logging all activities of the program, holds an internal buffer, saves all logged actions during program execution, displays select queries,
  * clears old logs
+ *
  * @see #buffer
  * @see #log(String, String)
  * @see #logSelect
  * @see #saveLogFiles()
  * @see #cleanUp()
  * @see #clearAllLogs()
- * */
+ *
+ */
 public class Log {
 
-    public static String LOG_VERSION = "1.2.0";
+    public static String LOG_VERSION = "1.2.1";
     public static int MAX_LOGS = 32;
     public static String LOG_DIR = "logs";
 
 
-
-    private Log(){}
+    private Log () {
+    }
 
     /**
      * Holds all logged information for {@code saveLogFiles} to write to a log and the latest log
+     *
      * @see #writeToFile(File)
      * @see #log(String, String)
-     * */
+     *
+     */
     private static final List<String> buffer = new ArrayList<>();
 
     /**
      * Deletes all logs in the {@code LOG_DIR} folder. For chronological deletion check {@code cleanUP}
+     *
      * @see #LOG_DIR
      * @see #cleanUp()
-     * */
+     *
+     */
     public static void clearAllLogs () {
         File folder = new File(LOG_DIR);
 
@@ -59,13 +65,16 @@ public class Log {
         }
         Log.warn("Cleared logs");
     }
+
     /**
      * Deletes all logs in the {@code LOG_DIR} folder based on how old they are. It will delete enough files so there are less or equal to {@code MAX_LOGS}.
      * For full clean-up, check {@code clearAllLogs}
+     *
      * @see #clearAllLogs()
      * @see #LOG_DIR
      * @see #MAX_LOGS
-     * */
+     *
+     */
     public static void cleanUp () {
         File folder = new File(LOG_DIR);
 
@@ -77,8 +86,14 @@ public class Log {
 
         info("There are %d logs in memory".formatted(logCount));
 
+        if (MAX_LOGS <= 0) {
+            error("MAX_LOGS is set to %s, will not clean up files.".formatted(MAX_LOGS));
+            error("Change value to a positive int.");
+            return;
+        }
+
         if (logCount > MAX_LOGS) {
-            error("There are over %d logs, deleting %d oldest".formatted(MAX_LOGS, logCount - MAX_LOGS));
+            error("There are over %d log(s), deleting %d old(est)".formatted(MAX_LOGS, logCount - MAX_LOGS));
 
             for (int i = 0; i < logCount - MAX_LOGS; i++) {
                 assert logs != null;
@@ -92,19 +107,23 @@ public class Log {
 
     /**
      * Logs info action with {@code GREEN} color, check the constants .kt file for the value
+     *
      * @see Settings#GREEN
      * @see #log(String message, String color)
-     * */
+     *
+     */
     public static void info (String message) {
         log(message, GREEN);
         infoCount++;
     }
 
     /**
-        * Logs execution action with {@code BLUE} color, check the constants .kt file for the value
-        * @see Settings#BLUE
-        * @see #log(String message, String color)
-     * */
+     * Logs execution action with {@code BLUE} color, check the constants .kt file for the value
+     *
+     * @see Settings#BLUE
+     * @see #log(String message, String color)
+     *
+     */
     public static void exec (String message) {
         log(message, BLUE);
         execCount++;
@@ -112,9 +131,11 @@ public class Log {
 
     /**
      * Logs warn action with {@code YELLOW} color, check the constants .kt file for the value
+     *
      * @see Settings#YELLOW
      * @see #log(String message, String color)
-     * */
+     *
+     */
 
     public static void warn (String message) {
         log(message, YELLOW);
@@ -123,9 +144,11 @@ public class Log {
 
     /**
      * Logs error action with {@code RED} color, check the constants .kt file for the value
+     *
      * @see Settings#RED
      * @see #log(String message, String color)
-     * */
+     *
+     */
     public static void error (String message) {
         log(message, RED);
         errorCount++;
@@ -139,9 +162,11 @@ public class Log {
 
     /**
      * Saves {@code buffer} to two .log files. One is named with a timestamp and the second is latest.log.
+     *
      * @see #buffer
      * @see #writeToFile
-     * */
+     *
+     */
     public static void saveLogFiles () {
 
         try {
@@ -156,10 +181,10 @@ public class Log {
             File file = new File(dir, filename);
             File latest = new File(dir, "latest.log");
 
-            if(file.createNewFile()) {
+            if (file.createNewFile()) {
                 info("Created log file at %s".formatted(file.getAbsolutePath()));
             }
-            if(latest.createNewFile()) {
+            if (latest.createNewFile()) {
                 info("Created latest log file at %s".formatted(file.getAbsolutePath()));
             }
 
@@ -181,11 +206,13 @@ public class Log {
 
     /**
      * Writes the {@code buffer} values into a {@code .log} file and returns the file. It replaces the ansi color codes with words
+     *
      * @return File {@code .log}
      * @see #stripAnsi(String message)
      * @see #saveLogFiles()
-     * */
-    private static File writeToFile(File file){
+     *
+     */
+    private static File writeToFile (File file) {
         try (FileWriter writer = new FileWriter(file)) {
             for (String line : buffer) {
                 writer.write(stripAnsi(line) + System.lineSeparator());
@@ -198,22 +225,26 @@ public class Log {
 
     /**
      * Returns the log version in a neat format from the constants .kt file
+     *
      * @see #LOG_VERSION
-     * */
+     *
+     */
     private static String getLogVersion () {
-        return "LOG VERSION=%s | LOG DIR=%s "
+        return "LOG VERSION=%s | LOG DIR=%s"
                 .formatted(LOG_VERSION, LOG_DIR);
     }
 
     /**
      * Returns the total amount of all log lines by type in a neat format
+     *
      * @return String logCount
      * @see #saveLogFiles()
      * @see #info(String message)
      * @see #exec(String message)
      * @see #error(String message)
      * @see #warn(String message)
-          * */
+     *
+     */
     private static String getLogCount () {
         return "INFO=%d | EXEC=%d | WARN=%d | ERROR=%d"
                 .formatted(infoCount, execCount, errorCount, warnCount);
@@ -221,12 +252,14 @@ public class Log {
 
     /**
      * Used in {@code .log} file creation. Removes Ansi values and replaces them with {@code String} values
+     *
      * @see #saveLogFiles()
      * @see #info(String message)
      * @see #exec(String message)
      * @see #error(String message)
      * @see #warn(String message)
-     * */
+     *
+     */
 
     public static String stripAnsi (String message) {
 
@@ -241,11 +274,13 @@ public class Log {
 
     /**
      * Saves an action {@code String} with a specific colored timestamp. Methods bellow are use-cases with specific color timestamps
+     *
      * @see #info(String message)
      * @see #exec(String message)
      * @see #error(String message)
      * @see #warn(String message)
-     * */
+     *
+     */
     private static void log (String message, String color) {
         String timestamp = "[" + LocalDateTime.now().format(Objects.requireNonNull(TIME)) + "] ";
 
@@ -259,8 +294,10 @@ public class Log {
 
     /**
      * Method used for quick and pretty display printing of {@code SELECT} type queries, usually directly called from {@code selectOperation}
+     *
      * @see Query#getResult(String SQL)
-     * */
+     *
+     */
     public static final Consumer<List<String[]>> logSelect = rows -> {
 
         if (rows == null || rows.isEmpty()) return;
@@ -297,8 +334,10 @@ public class Log {
 
     /**
      * Generates a well formated view for a row with some size
+     *
      * @see #logSelect
-     * */
+     *
+     */
     private static StringBuilder getSpaceFormatedString (String[] row, int columns, int[] maxWidthPerCell) {
         StringBuilder formattedRow = new StringBuilder();
 
@@ -316,8 +355,10 @@ public class Log {
 
     /**
      * Consumer for SQL code execution (CREATE, INSERT, UPDATE, DELETE).
+     *
      * @see Query#executeExpression(String query)
-     * */
+     *
+     */
     public static final Consumer<String> logSQL = Log::exec;
 
 }
