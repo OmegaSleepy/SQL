@@ -3,15 +3,12 @@ package sql;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static sql.FileUtil.getResourceFile;
 import static sql.Log.info;
 import static sql.Log.logSQL;
 import static sql.Settings.logQueries;
@@ -66,25 +63,14 @@ public class Query {
      * @see FileUtil#getResourceFile(String fileName)
      * @see #getResult(String fullSQL)
      * **/
-    public static ArrayList<String[]> fromFile (File file) {
+    public static ArrayList<String[]> fromFile (String resourcePath) {
 
-        StringBuilder query = new StringBuilder();
-        Scanner scanner = null;
 
-        if (logQueries) info("Running query from " + file);
+        if (logQueries) info("Running query from " + resourcePath);
 
-        try {
-            scanner = new Scanner(file);
-        } catch (FileNotFoundException e) {
-            CrashUtil.crash(e);
-        }
 
-        while (true) {
-            assert scanner != null;
-            if (!scanner.hasNext()) break;
-            query.append(scanner.next()).append(" ");
-        }
-        return getResult(query.toString());
+
+        return getResult(FileUtil.readResourceFile(resourcePath));
 
     }
 
@@ -98,111 +84,28 @@ public class Query {
      * @see #fromFile(File file)
      * @see #isValid(File dir) 
      * **/
-    public static ArrayList<ArrayList<String[]>> fromSequence (File dir){
-        if (!isValid(dir)) return null;
+    public static ArrayList<ArrayList<String[]>> fromSequence (String sequenceFolder){
 
-        List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
+        String sequenceContent = FileUtil.readResourceFile(
+                sequenceFolder + File.separator + "sequence.txt");
 
-        File sequenceTXT = new File(dir + "/sequence.txt");
-        
-        if(!files.contains(sequenceTXT)){
-            CrashUtil.crash(new RuntimeException("You must have a sequence.txt in a sequence line"));
+        var sequence = Arrays.stream(sequenceContent.split("\\R"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+
+        ArrayList<ArrayList<String[]>> results = new ArrayList<>();
+
+        for(String script: sequence){
+            if(!script.endsWith(".txt")) continue;
+            String sql = FileUtil.readResourceFile(sequenceFolder + File.separator + script);
+            results.add(getResult(sql));
         }
 
-        try (Scanner scanner = new Scanner(sequenceTXT)){
-            StringBuilder sequence = new StringBuilder();
-            while (scanner.hasNextLine()){
-                sequence.append(scanner.nextLine());
-            }
-
-            String[] sequenceLine = Arrays.stream(sequence.toString().split(","))
-                    .map(s -> s.trim().toLowerCase())
-                    .toArray(String[]::new);
-
-            Map<String, File> filesMap = Arrays.stream(Objects.requireNonNull(dir.listFiles()))
-                    .collect(Collectors.toMap(f -> f.getName().toLowerCase(), f -> f));
-
-            for (int i = 0; i != sequenceLine.length; i++){
-                filesMap.put(sequenceLine[i],null);
-            }
-
-            var answers = new ArrayList<ArrayList<String[]>>();
-
-
-            for (String fileName : sequenceLine) {
-                File file = filesMap.get(fileName + ".txt");
-                if (file == null) {
-                    CrashUtil.crash(new RuntimeException("File not found: " + fileName + ".txt"));
-                }
-                answers.add(fromFile(file));
-            }
-
-            return answers;
-
-        } catch (FileNotFoundException e) {
-            CrashUtil.crash(e);
-        }
-
-        return null;
-    }
-
-    public static ArrayList<ArrayList<String[]>> fromLine (File dir){
-
-        if (!isValid(dir)) return null;
-
-        List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles()));
-
-        //Sort by alphabetical order
-        files.sort((o1, o2) -> {
-            var first = o1.getName().toCharArray();
-            var second = o2.getName().toCharArray();
-
-            for (int i = 0; i < Math.max(first.length, second.length); i++) {
-                if(first[i] > second[i]){
-                    return 1;
-                } else if (second[i] > first[i]) {
-                    return -1;
-                }
-            }
-
-            if(first.length > second.length){
-                return 1;
-            } else if (first.length < second.length) {
-                return -1;
-            }
-            CrashUtil.crash(new RuntimeException("You cannot have files with the same name in a sequence: " + o1.getName()));
-            return 0;
-
-        });
-
-        var answers = new ArrayList<ArrayList<String[]>>();
-
-        for (File queryFile: files){
-            answers.add(fromFile(queryFile));
-        }
-
-        return answers;
-
+        return results;
 
     }
 
-    /**
-     * Used to determine if the sequence folder has a {@code sequence.txt} file or not.
-     * @see #fromSequence(File dir)
-     * **/
-    private static boolean isValid (File dir) {
-        if(!dir.exists()) {
-            CrashUtil.crash(new RuntimeException("A sequence, with this name \"" + dir + "\" , does not exist"));
-            return false;
-        }
-
-        if(!dir.isDirectory()){
-            CrashUtil.crash(new RuntimeException("This is not a directory"));
-            return false;
-        }
-
-        return true;
-    }
 
     /**
      * Used to connect to the DB and decide which operation should be executed. Either {@code selectOperation} or {@code executeUpdate}.

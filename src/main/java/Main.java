@@ -2,15 +2,14 @@ import sql.Query;
 import sql.Script;
 import sql.SqlConnection;
 
-import java.util.Arrays;
+import java.io.File;
+
 
 public class Main {
     public static void main (String[] args) {
-        var result = Query.getResult("use musicIndex;" +
-                "select title from musicFiles where title != \"\";");
 
-        assert result != null;
-        System.out.println((Arrays.toString(Query.extractColumn(result, 0))));
+        Query.fromFile("print.txt");
+        Query.fromSequence("som");
 
         Script.end(SqlConnection.LIBRARY_START, System.nanoTime());
     }
