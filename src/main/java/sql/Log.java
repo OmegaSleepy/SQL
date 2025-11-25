@@ -3,9 +3,13 @@ package sql;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -26,7 +30,7 @@ import static sql.Settings.*;
  */
 public class Log {
 
-    public static String LOG_VERSION = "1.2.1";
+    public static String LOG_VERSION = "1.3.0";
     public static int MAX_LOGS = 32;
     public static String LOG_DIR = "logs";
 
@@ -51,18 +55,20 @@ public class Log {
      *
      */
     public static void clearAllLogs () {
-        File folder = new File(LOG_DIR);
 
-        if (!folder.exists() || !folder.isDirectory()) return;
-
-        for (File file : Objects.requireNonNull(folder.listFiles())) {
-            if (file == null) {
-                return;
-            }
-            if (file.isFile()) {
-                file.delete();
-            }
+        try {
+            Files.walk(Paths.get(LOG_DIR)).forEach(t -> {
+                try {
+                    if(!Files.isDirectory(t))
+                        Files.delete(t);
+                } catch (IOException e) {
+                    CrashUtil.crash(e);
+                }
+            });
+        } catch (IOException e) {
+            CrashUtil.crash(e);
         }
+
         Log.warn("Cleared logs");
     }
 
@@ -76,15 +82,6 @@ public class Log {
      *
      */
     public static void cleanUp () {
-        File folder = new File(LOG_DIR);
-
-        if (!folder.exists() || !folder.isDirectory()) return;
-
-        int logCount = folder.listFiles().length;
-
-        File[] logs = folder.listFiles();
-
-        info("There are %d logs in memory".formatted(logCount));
 
         if (MAX_LOGS <= 0) {
             error("MAX_LOGS is set to %s, will not clean up files.".formatted(MAX_LOGS));
@@ -92,17 +89,47 @@ public class Log {
             return;
         }
 
-        if (logCount > MAX_LOGS) {
-            error("There are over %d log(s), deleting %d old(est)".formatted(MAX_LOGS, logCount - MAX_LOGS));
+        try {
+            List<Path> pathList = new ArrayList<>();
+            Files.walk(Paths.get(LOG_DIR)).forEach(t -> pathList.add(t));
 
-            for (int i = 0; i < logCount - MAX_LOGS; i++) {
-                assert logs != null;
-                warn("Deleting %s".formatted(logs[i].getName()));
-                logs[i].delete();
+            int logCount = pathList.size();
+
+            Map<Boolean, String> logTranslate = Map.of(false, "log", true, "logs");
+
+            String logForm = logTranslate.get(checkPlural(logCount));
+
+            if(logCount > 0)
+            info("There are %d %s in memory".formatted(logCount, logForm));
+
+            if (logCount > MAX_LOGS) {
+                int difference = logCount - MAX_LOGS;
+
+                Log.error("There are over %d %s, deleting %d oldest"
+                        .formatted(MAX_LOGS, logForm, difference));
+
+                for (int i = 0; i < difference; i++) {
+
+                    Path path = pathList.get(i);
+
+                    warn("Deleting %s".formatted(path));
+
+                    if(Files.isRegularFile(path)){
+                        Files.delete(path);
+                    }
+                }
+
             }
 
+        } catch (IOException e) {
+            CrashUtil.crash(e);
         }
 
+    }
+
+    private static boolean checkPlural(int i){
+        if (i > 1) return true;
+        return false;
     }
 
     /**
@@ -160,6 +187,7 @@ public class Log {
     static int warnCount;
     static int errorCount;
 
+    //TODO rewrite this method for NIO
     /**
      * Saves {@code buffer} to two .log files. One is named with a timestamp and the second is latest.log.
      *

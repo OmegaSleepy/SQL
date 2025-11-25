@@ -1,16 +1,10 @@
-import sql.Query;
-import sql.Script;
-import sql.SqlConnection;
-
-import java.io.File;
+import sql.Log;
 
 
 public class Main {
-    public static void main (String[] args) {
+    public static void main (String[] args) throws InterruptedException {
 
-        Query.fromFile("print.txt");
-        Query.fromSequence("som");
+        Log.cleanUp();
 
-        Script.end(SqlConnection.LIBRARY_START, System.nanoTime());
     }
 }
