@@ -41,14 +41,14 @@ public class Log {
     /**
      * Holds all logged information for {@code saveLogFiles} to write to a log and the latest log
      *
-     * @see #writeToFile(File)
      * @see #log(String, String)
+     * @see #saveLogFiles()
      *
      */
     private static final List<String> buffer = new ArrayList<>();
 
     /**
-     * Deletes all logs in the {@code LOG_DIR} folder. For chronological deletion check {@code cleanUP}
+     * Deletes all logs in the {@code LOG_DIR} folder. For chronological deletion check {@code cleanUp}
      *
      * @see #LOG_DIR
      * @see #cleanUp()
@@ -59,7 +59,7 @@ public class Log {
         try {
             Files.walk(Paths.get(LOG_DIR)).forEach(t -> {
                 try {
-                    if(!Files.isDirectory(t))
+                    if (!Files.isDirectory(t))
                         Files.delete(t);
                 } catch (IOException e) {
                     CrashUtil.crash(e);
@@ -73,7 +73,8 @@ public class Log {
     }
 
     /**
-     * Deletes all logs in the {@code LOG_DIR} folder based on how old they are. It will delete enough files so there are less or equal to {@code MAX_LOGS}.
+     * Deletes logs in the {@code LOG_DIR} folder based on how old they are.
+     * It will delete enough files so there are less or equal to {@code MAX_LOGS}.
      * For full clean-up, check {@code clearAllLogs}
      *
      * @see #clearAllLogs()
@@ -99,8 +100,8 @@ public class Log {
 
             String logForm = logTranslate.get(checkPlural(logCount));
 
-            if(logCount > 0)
-            info("There are %d %s in memory".formatted(logCount, logForm));
+            if (logCount > 0)
+                info("There are %d %s in memory".formatted(logCount, logForm));
 
             if (logCount > MAX_LOGS) {
                 int difference = logCount - MAX_LOGS;
@@ -114,7 +115,7 @@ public class Log {
 
                     warn("Deleting %s".formatted(path));
 
-                    if(Files.isRegularFile(path)){
+                    if (Files.isRegularFile(path)) {
                         Files.delete(path);
                     }
                 }
@@ -127,7 +128,7 @@ public class Log {
 
     }
 
-    private static boolean checkPlural(int i){
+    private static boolean checkPlural (int i) {
         if (i > 1) return true;
         return false;
     }
@@ -187,68 +188,47 @@ public class Log {
     static int warnCount;
     static int errorCount;
 
-    //TODO rewrite this method for NIO
     /**
      * Saves {@code buffer} to two .log files. One is named with a timestamp and the second is latest.log.
      *
      * @see #buffer
-     * @see #writeToFile
      *
      */
     public static void saveLogFiles () {
 
+        String fileName = LocalDateTime.now().format(Objects.requireNonNull(FILE)) + ".log";
+        String latest = "latest.log";
+
+        Path logFile = Path.of(LOG_DIR, fileName);
+        Path logLatest = Path.of(LOG_DIR, latest);
+
+        info(getLogVersion());
+        info(getLogCount());
+        info("Created log file at %s.".formatted(logFile));
+
+        if (!Files.exists(Path.of(LOG_DIR))) {
+            try {
+                Files.createDirectory(Path.of(LOG_DIR));
+            } catch (IOException e) {
+                CrashUtil.crash(e);
+            }
+        }
+
+        List<String> log = new ArrayList<>();
+
+        buffer.stream()
+                .map(s -> stripAnsi(s))
+                .forEach(log::add);
+
+
         try {
-            File dir = new File(LOG_DIR);
-            if (!dir.exists()) {
-                if (dir.mkdir()) {
-                    info("Log folder generated at %s".formatted(dir.getAbsolutePath()));
-                }
-            }
-
-            String filename = LocalDateTime.now().format(Objects.requireNonNull(FILE)) + ".log";
-            File file = new File(dir, filename);
-            File latest = new File(dir, "latest.log");
-
-            if (file.createNewFile()) {
-                info("Created log file at %s".formatted(file.getAbsolutePath()));
-            }
-            if (latest.createNewFile()) {
-                info("Created latest log file at %s".formatted(file.getAbsolutePath()));
-            }
-
-            info(getLogVersion());
-            info(getLogCount());
-
-            writeToFile(file).createNewFile();
-            writeToFile(latest).createNewFile();
-
-            info("Saved log to %s".formatted(dir + File.separator + filename));
-            info("Saved latest to %s".formatted(latest + File.separator + filename));
-
+            Files.write(logFile, log);
+            Files.delete(logLatest);
+            Files.copy(logFile, logLatest);
 
         } catch (IOException e) {
             CrashUtil.crash(e);
         }
-
-    }
-
-    /**
-     * Writes the {@code buffer} values into a {@code .log} file and returns the file. It replaces the ansi color codes with words
-     *
-     * @return File {@code .log}
-     * @see #stripAnsi(String message)
-     * @see #saveLogFiles()
-     *
-     */
-    private static File writeToFile (File file) {
-        try (FileWriter writer = new FileWriter(file)) {
-            for (String line : buffer) {
-                writer.write(stripAnsi(line) + System.lineSeparator());
-            }
-        } catch (IOException e) {
-            CrashUtil.crash(e);
-        }
-        return file;
     }
 
     /**
