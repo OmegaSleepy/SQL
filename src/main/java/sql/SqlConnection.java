@@ -25,19 +25,24 @@ public class SqlConnection {
 
     public static final long LIBRARY_START = System.nanoTime();
 
+    /**
+     * Connects the lib to the database and reads a credentials file.
+     * @see Credentials
+     * **/
     public static void initializeConnection(){
-        if(url.isEmpty() || username.isEmpty() || password.isEmpty()){
+        if(getUrl().isEmpty() || getUsername().isEmpty() || getPassword().isEmpty()){
             Credentials.inputCredentialFile(new File("credentials.txt"));
         }
 
         try {
-            connection = DriverManager.getConnection(url, username, password);
+            connection = DriverManager.getConnection(getUrl(), getUsername(), getPassword());
             Logger.getLogger("sqlite-jdbc").setLevel(Level.OFF);
         } catch (SQLException e) {
             CrashUtil.crashViolently(e);
         }
     }
 
+    //Initializing the connection by default at standard class initialization
     static {
         initializeConnection();
     }

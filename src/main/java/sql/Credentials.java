@@ -6,11 +6,24 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Scanner;
 
+//TODO replace IO with NIO
 public class Credentials {
 
-    public static String url;
-    public static String username;
-    public static String password;
+    private static String url;
+    private static String username;
+    private static String password;
+
+    public static String getUrl () {
+        return url;
+    }
+
+    public static String getUsername () {
+        return username;
+    }
+
+    public static String getPassword () {
+        return password;
+    }
 
     static {
         File file = new File("credentials.txt");

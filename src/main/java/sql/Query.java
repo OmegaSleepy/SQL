@@ -22,10 +22,8 @@ import static sql.SqlConnection.connection;
  * @see #executeExpression(String)
  * @see #selectOperation(PreparedStatement)
  *
- * @see #fromFile(File)
-
- * @see #fromSequence(File)
- * @see #fromLine(File)
+ * @see #fromFile(String resourcePath)
+ * @see #fromSequence(String resourcePath)
  * */
 public class Query {
 
@@ -60,7 +58,7 @@ public class Query {
 
     /**
      * Used to execute sql queries from a file in the resource folder. Should be used in combination with {@code FileUtil}.
-     * @see FileUtil#getResourceFile(String fileName)
+     * @see FileUtil#readResourceFile(String resourcePath)
      * @see #getResult(String fullSQL)
      * **/
     public static ArrayList<String[]> fromFile (String resourcePath) {
@@ -81,8 +79,7 @@ public class Query {
      *     <p>{@code <\Script1\>.txt, <\Script2\>.txt...}</p>
      * </div>
      * Files can be named anything, but they must be a .txt file.
-     * @see #fromFile(File file)
-     * @see #isValid(File dir) 
+     * @see #fromFile(String resourcePath) 
      * **/
     public static ArrayList<ArrayList<String[]>> fromSequence (String sequenceFolder){
 
