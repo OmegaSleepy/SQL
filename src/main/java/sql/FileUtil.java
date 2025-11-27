@@ -13,7 +13,6 @@ public class FileUtil {
 
     private FileUtil(){}
 
-
     /**
      * Used in combination with {@code readResourceFile}. Used to safely get resource files inside of the .jar
      * @see #readResourceFile(String resourcePath)

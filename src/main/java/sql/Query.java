@@ -63,10 +63,7 @@ public class Query {
      * **/
     public static ArrayList<String[]> fromFile (String resourcePath) {
 
-
         if (logQueries) info("Running query from " + resourcePath);
-
-
 
         return getResult(FileUtil.readResourceFile(resourcePath));
 

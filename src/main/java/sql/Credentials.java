@@ -1,33 +1,31 @@
 package sql;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
-import java.util.Scanner;
 
-//TODO replace IO with NIO
 public class Credentials {
 
     private static String url;
     private static String username;
     private static String password;
 
-    public static String getUrl () {
+    public static String getUrl() {
         return url;
     }
 
-    public static String getUsername () {
+    public static String getUsername() {
         return username;
     }
 
-    public static String getPassword () {
+    public static String getPassword() {
         return password;
     }
 
     static {
-        File file = new File("credentials.txt");
-        inputCredentialFile(file);
+        inputCredentialFile("credentials.txt");
     }
 
     private static final String urlPlaceholder = "<URL> ex. jdbc:mysql://localhost:3306/";
@@ -37,72 +35,86 @@ public class Credentials {
 
     /**
      * Used for overriding the credentials of the connection
-     * **/
-    public static void inputCredentialFile(File file){
+     *
+     **/
+    public static void inputCredentialFile(String path) {
 
-        if(!file.exists()) {
-            credentialsDoesNotExistError(file);
+        Path credentailsPath = Path.of(path);
+
+        if (!Files.exists(credentailsPath)) {
+            credentialsDoesNotExistError(credentailsPath);
         }
 
-        try (Scanner scanner = new Scanner(file)){
-            url = scanner.nextLine();
-            username = scanner.nextLine();
-            password = scanner.nextLine();
+        try {
+            var cred = Files.readAllLines(credentailsPath);
+            url = cred.get(0);
+            username = cred.get(1);
+            //some connections are without password, we need to account for those by checking credentials.txt if it has a password or not
+            password = "";
+            if (cred.size() > 2) {
+                password = cred.get(2);
+            }
             Log.info("Loaded credentials from file.");
 
             checkValid();
 
-        } catch (Exception e){
+        } catch (IOException e) {
             CrashUtil.crashViolently(e);
         }
+
     }
 
     /**
      * Used to check if the credential values are not the placeholder ones and if so it ends the project.
+     *
      * @see #passholderPlaceholder
      * @see #usernamePlaceholder
      * @see #urlPlaceholder
-     * **/
-    private static void checkValid () {
+     *
+     **/
+    private static void checkValid() {
 
         boolean isSuitable = true;
-        if(Objects.equals(urlPlaceholder, url)){
+        if (Objects.equals(urlPlaceholder, url)) {
             Log.error("URL is the placeholder value, please change!");
             isSuitable = false;
         }
-        if(Objects.equals(usernamePlaceholder, username)){
+        if (Objects.equals(usernamePlaceholder, username)) {
             Log.error("Username is the placeholder value, please change!");
             isSuitable = false;
         }
-        if(Objects.equals(passholderPlaceholder, password)){
+        if (Objects.equals(passholderPlaceholder, password)) {
             Log.error("Password is the placeholder value, please change!");
             isSuitable = false;
         }
-        if(!isSuitable){
+        if (!isSuitable) {
             CrashUtil.crashViolently(new RuntimeException("Error in credentials! Check logs for the error!"));
         }
     }
+
     /**
      * Used when the credential file does not exist and creates a new one with placeholder values. Also ends the project.
-     * @see #inputCredentialFile(File)
-     * **/
-    private static void credentialsDoesNotExistError(File file){
+     *
+     * @see #inputCredentialFile(String path)
+     *
+     **/
+    private static void credentialsDoesNotExistError(Path path) {
         try {
             Log.error("Credentials.txt does not exist! Creating one...");
-            file.createNewFile();
-            try (FileWriter writer = new FileWriter(file)){
-                writer.write("%s\n%s\n%s".formatted(urlPlaceholder,usernamePlaceholder,passholderPlaceholder));
-            }
+            Files.createFile(path);
 
-            CrashUtil.crashViolently(new RuntimeException("Credential file did not exist. Go to %s and fill in your information".formatted(file.getAbsolutePath())));
+            Files.write(path, List.of(urlPlaceholder, usernamePlaceholder, passholderPlaceholder));
+
+            CrashUtil.crashViolently(
+                    new RuntimeException(
+                            "Credential file did not exist. Go to %s and fill in your information".formatted(path)
+                    )
+            );
 
         } catch (IOException e) {
             CrashUtil.crash(e);
         }
     }
-
-
-
 
 
 }

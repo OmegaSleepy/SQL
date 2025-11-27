@@ -1,9 +1,6 @@
 package sql;
 
-import java.io.File;
 import java.sql.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static sql.Credentials.*;
 
@@ -22,7 +19,11 @@ public class SqlConnection {
      * @see Query
      * **/
     public static java.sql.Connection connection;
-
+    
+    /**
+     * Holds the exact time the Library initializes as {@code nanoTime}. Used for profiling
+     * @see Script#end(long start, long end) 
+     * **/
     public static final long LIBRARY_START = System.nanoTime();
 
     /**
@@ -30,16 +31,21 @@ public class SqlConnection {
      * @see Credentials
      * **/
     public static void initializeConnection(){
+        Log.info("url: %s, username: %s, password: %s".formatted(getUrl(), getUsername(), getPassword()));
+
         if(getUrl().isEmpty() || getUsername().isEmpty() || getPassword().isEmpty()){
-            Credentials.inputCredentialFile(new File("credentials.txt"));
+
+            Credentials.inputCredentialFile("credentials.txt");
+
         }
 
         try {
             connection = DriverManager.getConnection(getUrl(), getUsername(), getPassword());
-            Logger.getLogger("sqlite-jdbc").setLevel(Level.OFF);
+//            Logger.getLogger("sqlite-jdbc").setLevel(Level.OFF);
         } catch (SQLException e) {
             CrashUtil.crashViolently(e);
         }
+
     }
 
     //Initializing the connection by default at standard class initialization

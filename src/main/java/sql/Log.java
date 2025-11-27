@@ -1,7 +1,5 @@
 package sql;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +28,7 @@ import static sql.Settings.*;
  */
 public class Log {
 
-    public static String LOG_VERSION = "1.3.0";
+    public static String LOG_VERSION = "1.3.1";
     public static int MAX_LOGS = 32;
     public static String LOG_DIR = "logs";
 
@@ -113,11 +111,11 @@ public class Log {
 
                     Path path = pathList.get(i);
 
-                    warn("Deleting %s".formatted(path));
-
                     if (Files.isRegularFile(path)) {
                         Files.delete(path);
                     }
+
+                    warn("Deleted %s".formatted(path));
                 }
 
             }
@@ -223,7 +221,7 @@ public class Log {
 
         try {
             Files.write(logFile, log);
-            Files.delete(logLatest);
+            if(Files.exists(logLatest)) Files.delete(logLatest);
             Files.copy(logFile, logLatest);
 
         } catch (IOException e) {
