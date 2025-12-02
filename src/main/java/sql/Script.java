@@ -10,6 +10,8 @@ import static sql.Log.info;
  * **/
 public class Script {
 
+    private Script(){}
+
     /**
      * Safely closes the SQL connection, displays total runtime and begins the process of saving the log. This will also execute System.exit(0)
      * @see Log#saveLogFiles()
