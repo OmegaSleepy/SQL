@@ -1,6 +1,7 @@
 package sql;
 
-import java.sql.*;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 import static sql.Credentials.*;
 

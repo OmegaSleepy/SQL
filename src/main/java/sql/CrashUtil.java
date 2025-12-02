@@ -33,7 +33,7 @@ public class CrashUtil {
     /**
      * THIS will not close the connection. Logging errors with this method will end the program, due to it saving and throwing the error.
      * @see Log#error(String)
-     * @see Credentials#inputCredentialFile(File)
+     * @see Credentials#inputCredentialFile(String path) 
      * **/
     public static void crashViolently(Exception e){
         Log.error(e.getMessage());

@@ -10,7 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static sql.Log.info;
 import static sql.Log.logSQL;
@@ -60,9 +61,11 @@ public class Query {
     }
 
     /**
-     * Used to execute sql queries from a file in the resource folder. Should be used in combination with {@code FileUtil}.
+     * Used to execute sql queries from a file in the resource folder.
+     * Can't query from files that are outside the resource dir, use {@link #fromFile(String)} instead
      * @see FileUtil#readResourceFile(String resourcePath)
      * @see #getResult(String fullSQL)
+     * @see #fromFile(String path)
      * **/
     public static ArrayList<String[]> fromResourceFile(String resourcePath) {
 
@@ -72,13 +75,19 @@ public class Query {
 
     }
 
-    public static ArrayList<String[]> fromFile(String resourcePath) {
+    /**
+     * Used to execute sql queries from a file anywhere in the project. It is discouraged
+     * to query from resource files with this method, check {@link #fromSequence(String)}
+     * for these use cases
+     * @see #fromResourceFile(String)
+     * */
+    public static ArrayList<String[]> fromFile(String path) {
 
-        if (logQueries) info("Running query from " + resourcePath);
+        if (logQueries) info("Running query from " + path);
 
         try {
             StringBuilder builder = new StringBuilder();
-            for(String s: Files.readAllLines(Path.of(resourcePath)))
+            for(String s: Files.readAllLines(Path.of(path)))
             {
                 builder.append(s).append(" ");
             }

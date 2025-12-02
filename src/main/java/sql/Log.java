@@ -367,9 +367,7 @@ public class Log {
 
     /**
      * Consumer for SQL code execution (CREATE, INSERT, UPDATE, DELETE).
-     *
      * @see Query#executeExpression(String query)
-     *
      */
     public static final Consumer<String> logSQL = Log::exec;
 
