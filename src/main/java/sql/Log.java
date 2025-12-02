@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static sql.Settings.*;
 
@@ -28,7 +29,7 @@ import static sql.Settings.*;
  */
 public class Log {
 
-    public static String LOG_VERSION = "1.3.1";
+    public static String LOG_VERSION = "1.3.2";
     public static int MAX_LOGS = 32;
     public static String LOG_DIR = "logs";
 
@@ -127,8 +128,7 @@ public class Log {
     }
 
     private static boolean checkPlural (int i) {
-        if (i > 1) return true;
-        return false;
+        return i > 1;
     }
 
     /**
@@ -215,7 +215,7 @@ public class Log {
         List<String> log = new ArrayList<>();
 
         buffer.stream()
-                .map(s -> stripAnsi(s))
+                .map(Log::stripAnsi)
                 .forEach(log::add);
 
 
@@ -312,7 +312,13 @@ public class Log {
         //Sometimes queryResult can return malformed data with inconsistent column count,
         // this code block ensures that the absolute max is found
 
+        Predicate<String[]> checkNullTail = strings -> {
+            if (strings[strings.length - 1] == null) return true;
+            return !strings[strings.length - 1].isBlank();
+        };
+
         int columns = rows.stream()
+                .filter(checkNullTail)
                 .mapToInt(r -> r.length)
                 .max()
                 .orElse(0);
@@ -324,7 +330,7 @@ public class Log {
         for (String[] row : rows) {
             for (int i = 0; i < columns; i++) {
                 //if the row cell is null or is out of scope for the row then make it null, otherwise get the value
-                String cell = (i < row.length && row[i] != null) ? row[i] : "null";
+                String cell = (i < row.length && row[i] != null) ? row[i] : " ";
                 maxWidthPerCell[i] = Math.max(maxWidthPerCell[i], cell.length());
             }
         }
@@ -349,7 +355,7 @@ public class Log {
 
         for (int i = 0; i < columns; i++) {
             //if the row cell is null or is out of scope for the row then make it null, otherwise get the value
-            String cell = (i < row.length && row[i] != null) ? row[i] : "null";
+            String cell = (i < row.length && row[i] != null) ? row[i] : " ";
             //Add spaces to fill the printed cell with enough white space so the vertical lines match
             formattedRow.append(String.format("%-" + maxWidthPerCell[i] + "s", cell));
             //if it is not the last cell, append a vertical line
