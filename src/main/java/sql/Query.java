@@ -3,6 +3,9 @@ package sql;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -22,7 +25,7 @@ import static sql.SqlConnection.connection;
  * @see #executeExpression(String)
  * @see #selectOperation(PreparedStatement)
  *
- * @see #fromFile(String resourcePath)
+ * @see #fromResourceFile(String resourcePath)
  * @see #fromSequence(String resourcePath)
  * */
 public class Query {
@@ -61,12 +64,31 @@ public class Query {
      * @see FileUtil#readResourceFile(String resourcePath)
      * @see #getResult(String fullSQL)
      * **/
-    public static ArrayList<String[]> fromFile (String resourcePath) {
+    public static ArrayList<String[]> fromResourceFile(String resourcePath) {
 
         if (logQueries) info("Running query from " + resourcePath);
 
         return getResult(FileUtil.readResourceFile(resourcePath));
 
+    }
+
+    public static ArrayList<String[]> fromFile(String resourcePath) {
+
+        if (logQueries) info("Running query from " + resourcePath);
+
+        try {
+            StringBuilder builder = new StringBuilder();
+            for(String s: Files.readAllLines(Path.of(resourcePath)))
+            {
+                builder.append(s).append(" ");
+            }
+            return getResult(builder.toString());
+
+        } catch (IOException e) {
+            CrashUtil.crash(e);
+        }
+
+        return null;
     }
 
     /**
@@ -76,7 +98,7 @@ public class Query {
      *     <p>{@code <\Script1\>.txt, <\Script2\>.txt...}</p>
      * </div>
      * Files can be named anything, but they must be a .txt file.
-     * @see #fromFile(String resourcePath) 
+     * @see #fromResourceFile(String resourcePath)
      * **/
     public static ArrayList<ArrayList<String[]>> fromSequence (String sequenceFolder){
 
