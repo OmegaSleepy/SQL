@@ -1,71 +1,43 @@
 package sql;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 /**
  * Utility class for quick access to preformed paths to resource files
- * @see #getResourceFile(String fileName)
- * @see #getScriptFile(String fileName) 
- * @see #getScriptFile(String fileName) 
+ * @see #getResourceReader(String resourcePath)
+ * @see #readResourceFile(String resourcePath)
  * */
 public class FileUtil {
 
     private FileUtil(){}
 
     /**
-     * Used for quick and safe access of root resources files.
-     * @param fileName String
-     * @return {@code resourceFile} - String
-     * @see #getLineFile(String fileName) 
-     * @see #getScriptFile(String fileName) 
-     * */
-    public static File getResourceFile (String fileName) {
-        URL url = FileUtil.class.getClassLoader().getResource(fileName);
-        assert url != null;
-        File file = null;
+     * Used in combination with {@code readResourceFile}. Used to safely get resource files inside of the .jar
+     * @see #readResourceFile(String resourcePath)
+     * **/
+    public static BufferedReader getResourceReader (String resourcePath){
 
-        try {
-            file = new File(url.toURI());
-        } catch (URISyntaxException e) {
-            CrashUtil.crash(e);
+        InputStream in = FileUtil.class.getClassLoader().getResourceAsStream(resourcePath);
+
+        if (in == null) CrashUtil.crash(new IllegalArgumentException("SQL resource not found: " + resourcePath));
+
+        return new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Used in combination with {@code getResourceReader}. Safely returns a {@code String} containing the contence of the file referenced.
+     * @see #getResourceReader(String resourcePath)  
+     * **/
+    public static String readResourceFile (String resourcePath){
+        try (BufferedReader reader = getResourceReader(resourcePath)){
+            return reader.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read SQL resource: " + resourcePath, e);
         }
-
-        return file;
-    }
-
-    /**
-     * Used for quick and safe access to line folders in the {@code resource/script/line} folder.
-     * @param folderName String
-     * @return {@code folder} - File
-     * @see #getResourceFile(String fileName)
-     * @see #getScriptFile(String fileName) 
-     **/
-    public static File getLineFile (String folderName){
-        
-        folderName = "scripts/line/" + folderName;
-
-        File folder = getResourceFile(folderName);
-        
-        if (!folder.isDirectory()) CrashUtil.crash(new RuntimeException("Imputed file %s is not a folder!".formatted(folderName)));
-        
-        return folder;
-        
-    }
-
-    /**
-     * Used for quick and safe access to script files in the {@code resource/script} folder.
-     * @param fileName String
-     * @return {@code file} - File
-     * @see #getResourceFile(String fileName)
-     * @see #getScriptFile(String fileName)
-     **/
-    public static File getScriptFile (String fileName){
-        fileName = "scripts/" + fileName;
-
-        return getResourceFile(fileName);
-
     }
 
 }

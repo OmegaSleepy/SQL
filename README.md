@@ -1,4 +1,4 @@
-# SQL
+# SQLnow
 
 A lightweight Java library for SQL database interaction.
 
