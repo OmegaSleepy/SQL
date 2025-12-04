@@ -12,6 +12,8 @@ import static sql.Credentials.*;
  * **/
 public class SqlConnection {
 
+    //TODO Why not branch to try make an object class?
+
     private SqlConnection(){}
 
     /**
@@ -27,12 +29,13 @@ public class SqlConnection {
      * **/
     public static final long LIBRARY_START = System.nanoTime();
 
+    //TODO FIX double yes
+
     /**
      * Connects the lib to the database and reads a credentials file.
      * @see Credentials
      * **/
     public static void initializeConnection(){
-        Log.info("url: %s, username: %s, password: %s".formatted(getUrl(), getUsername(), getPassword()));
 
         if(getUrl().isEmpty() || getUsername().isEmpty() || getPassword().isEmpty()){
 
@@ -42,11 +45,52 @@ public class SqlConnection {
 
         try {
             connection = DriverManager.getConnection(getUrl(), getUsername(), getPassword());
-//            Logger.getLogger("sqlite-jdbc").setLevel(Level.OFF);
         } catch (SQLException e) {
             CrashUtil.crashViolently(e);
         }
 
+    }
+
+    /**
+     * Prints the saved credentials to the console
+     * @see #initializeConnection()
+     * **/
+    public static void printCredentials(){
+        String displayPassword = getPassword();
+        if(getPassword().isBlank()) displayPassword = "NONE>";
+
+        Log.info("url: %s, username: %s, password: %s".formatted(getUrl(), getUsername(), displayPassword));
+    }
+
+    /**
+     * Returns the ping time in ms for the connection
+     * @see #getInformation()
+     * **/
+    public static int getPing(){
+        try {
+            return connection.getNetworkTimeout();
+        } catch (SQLException e) {
+            CrashUtil.catchError(e);
+        }
+        return -1;
+    }
+
+    /**
+     * Prints basic information about the connection, fails when the connection is invalid/not initialized.
+     * Also fails if the ping is over 5 seconds
+     * @see #getPing()
+     * @see #printCredentials()
+     * **/
+    public static String getInformation() {
+        try {
+            if(connection.isValid(5)){
+                return "Connection is stable and valid at URL %s ping %s ms".formatted(getUrl(), getPing());
+            }
+        } catch (SQLException e) {
+            CrashUtil.catchError(e);
+        }
+
+        return "";
     }
 
     //Initializing the connection by default at standard class initialization

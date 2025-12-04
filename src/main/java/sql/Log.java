@@ -353,12 +353,43 @@ public class Log {
     private static StringBuilder getSpaceFormatedString (String[] row, int columns, int[] maxWidthPerCell) {
         StringBuilder formattedRow = new StringBuilder();
 
+
         for (int i = 0; i < columns; i++) {
-            //if the row cell is null or is out of scope for the row then make it null, otherwise get the value
             String cell = (i < row.length && row[i] != null) ? row[i] : " ";
-            //Add spaces to fill the printed cell with enough white space so the vertical lines match
-            formattedRow.append(String.format("%-" + maxWidthPerCell[i] + "s", cell));
-            //if it is not the last cell, append a vertical line
+
+            formattedRow.append(" ");
+
+            int width = maxWidthPerCell[i];
+
+            formattedRow.append(String.format("%-" + (width) + "s", cell));
+
+
+            formattedRow.append(" ");
+            if (i < columns - 1) formattedRow.append(" | ");
+        }
+        return formattedRow;
+    }
+
+    //TODO implement this method for the first row (column nametags)
+    private static StringBuilder getCenterFormatedString (String[] row, int columns, int[] maxWidthPerCell) {
+        StringBuilder formattedRow = new StringBuilder();
+
+
+        for (int i = 0; i < columns; i++) {
+            String cell = (i < row.length && row[i] != null) ? row[i] : " ";
+
+            formattedRow.append(" ");
+
+            int width = maxWidthPerCell[i];
+
+            int frontSpacing = (int) Math.ceil(width/2.0);
+            int backSpacing = (int) Math.floor(width/2.0);
+
+            formattedRow.append(String.format("%-" + backSpacing + "s", ""));
+            formattedRow.append(String.format("%-" + frontSpacing + "s", cell));
+
+
+            formattedRow.append(" ");
             if (i < columns - 1) formattedRow.append(" | ");
         }
         return formattedRow;
