@@ -14,7 +14,6 @@ import java.util.function.Predicate;
 
 import static sql.Settings.*;
 
-
 /**
  * Simple class aimed at logging all activities of the program, holds an internal buffer, saves all logged actions during program execution, displays select queries,
  * clears old logs
@@ -335,6 +334,8 @@ public class Log {
             }
         }
 
+
+
         // print rows with proper alignment
         for (String[] row : rows) {
 
@@ -362,31 +363,6 @@ public class Log {
             int width = maxWidthPerCell[i];
 
             formattedRow.append(String.format("%-" + (width) + "s", cell));
-
-
-            formattedRow.append(" ");
-            if (i < columns - 1) formattedRow.append(" | ");
-        }
-        return formattedRow;
-    }
-
-    //TODO implement this method for the first row (column nametags)
-    private static StringBuilder getCenterFormatedString (String[] row, int columns, int[] maxWidthPerCell) {
-        StringBuilder formattedRow = new StringBuilder();
-
-
-        for (int i = 0; i < columns; i++) {
-            String cell = (i < row.length && row[i] != null) ? row[i] : " ";
-
-            formattedRow.append(" ");
-
-            int width = maxWidthPerCell[i];
-
-            int frontSpacing = (int) Math.ceil(width/2.0);
-            int backSpacing = (int) Math.floor(width/2.0);
-
-            formattedRow.append(String.format("%-" + backSpacing + "s", ""));
-            formattedRow.append(String.format("%-" + frontSpacing + "s", cell));
 
 
             formattedRow.append(" ");
