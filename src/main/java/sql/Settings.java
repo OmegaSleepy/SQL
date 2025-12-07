@@ -7,6 +7,9 @@ import java.time.format.DateTimeFormatter;
  * Holds lookup values for the rest of the library which can be used its scope too.
  * **/
 public class Settings {
+
+    private Settings(){}
+
     /**
      * Used to stop coloring everything past the timestamp
      * @see Log#log(String message, String color)

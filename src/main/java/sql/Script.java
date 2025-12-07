@@ -10,6 +10,8 @@ import static sql.Log.info;
  * **/
 public class Script {
 
+    private Script(){}
+
     /**
      * Safely closes the SQL connection, displays total runtime and begins the process of saving the log. This will also execute System.exit(0)
      * @see Log#saveLogFiles()
@@ -27,7 +29,7 @@ public class Script {
     }
 
     /**
-     * Does not close the SQL connection, displays total runtime and begins the process of saving the log. This will also execute System.exit(0).
+     * Does not close the SQL connection, displays total runtime and begins the process of saving the log. This will also execute System.exit(-1).
      * Should be used when SQL connection could not be established
      * @see SqlConnection
      * @see Log#saveLogFiles()
@@ -36,5 +38,8 @@ public class Script {
         info("End of program");
         info("Program took %f seconds to execute".formatted((end - start)*1e-9));
         Log.saveLogFiles();
+        System.exit(-1);
     }
+
+
 }
