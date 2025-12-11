@@ -1,6 +1,7 @@
 package sql;
 
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,9 +29,10 @@ import static sql.Settings.*;
  */
 public class Log {
 
-    public static String LOG_VERSION = "1.3.2";
-    public static int MAX_LOGS = 32;
+    public static String LOG_VERSION = "1.4.0";
+    public static int MAX_LOGS = 2;
     public static String LOG_DIR = "logs";
+    public static String CRASH_DIR = "crash";
 
 
     private Log () {
@@ -63,6 +65,14 @@ public class Log {
                     CrashUtil.crash(e);
                 }
             });
+            Files.walk(Paths.get(LOG_DIR,CRASH_DIR)).forEach(t -> {
+                try{
+                    if (!Files.isDirectory(t))
+                        Files.delete(t);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         } catch (IOException e) {
             CrashUtil.crash(e);
         }
@@ -89,41 +99,49 @@ public class Log {
         }
 
         try {
-            List<Path> pathList = new ArrayList<>();
-            Files.walk(Paths.get(LOG_DIR)).forEach(t -> pathList.add(t));
-
-            int logCount = pathList.size();
-
-            Map<Boolean, String> logTranslate = Map.of(false, "log", true, "logs");
-
-            String logForm = logTranslate.get(checkPlural(logCount));
-
-            if (logCount > 0)
-                info("There are %d %s in memory".formatted(logCount, logForm));
-
-            if (logCount > MAX_LOGS) {
-                int difference = logCount - MAX_LOGS;
-
-                Log.error("There are over %d %s, deleting %d oldest"
-                        .formatted(MAX_LOGS, logForm, difference));
-
-                for (int i = 0; i < difference; i++) {
-
-                    Path path = pathList.get(i);
-
-                    if (Files.isRegularFile(path)) {
-                        Files.delete(path);
-                    }
-
-                    warn("Deleted %s".formatted(path));
-                }
-
-            }
+            clearDir(Path.of(LOG_DIR));
+            clearDir(Path.of(LOG_DIR,CRASH_DIR));
 
         } catch (IOException e) {
             CrashUtil.crash(e);
         }
 
+    }
+
+    private static void clearDir(Path logDir) throws IOException {
+        List<Path> pathList = new ArrayList<>();
+        //TODO implement checking if the file in actually in the logDir folder
+        Files.walk(logDir).forEach(t -> {
+            pathList.add(t);
+        });
+
+        int logCount = pathList.size();
+
+        Map<Boolean, String> logTranslate = Map.of(false, "log", true, "logs");
+
+        String logForm = logTranslate.get(checkPlural(logCount));
+
+        if (logCount > 0)
+            info("There are %d %s in memory".formatted(logCount, logForm));
+
+        if (logCount > MAX_LOGS) {
+            int difference = logCount - MAX_LOGS;
+
+            Log.error("There are over %d %s, deleting %d oldest"
+                    .formatted(MAX_LOGS, logForm, difference));
+
+            for (int i = 0; i < difference; i++) {
+
+                Path path = pathList.get(i);
+
+                if (Files.isRegularFile(path)) {
+                    Files.delete(path);
+                }
+
+                warn("Deleted %s".formatted(path));
+            }
+
+        }
     }
 
     private static boolean checkPlural (int i) {
@@ -196,16 +214,18 @@ public class Log {
         String fileName = LocalDateTime.now().format(Objects.requireNonNull(FILE)) + ".log";
         String latest = "latest.log";
 
-        Path logFile = Path.of(LOG_DIR, fileName);
-        Path logLatest = Path.of(LOG_DIR, latest);
+        Path workingDir = CrashUtil.crashed ? Path.of(LOG_DIR, CRASH_DIR) : Path.of(LOG_DIR);
+
+        Path logFile = Path.of(workingDir.toString(), fileName);
+        Path logLatest = Path.of(workingDir.toString(), latest);
 
         info(getLogVersion());
         info(getLogCount());
         info("Created log file at %s.".formatted(logFile));
 
-        if (!Files.exists(Path.of(LOG_DIR))) {
+        if (!Files.exists(workingDir)) {
             try {
-                Files.createDirectory(Path.of(LOG_DIR));
+                Files.createDirectory(workingDir);
             } catch (IOException e) {
                 CrashUtil.crash(e);
             }
@@ -252,7 +272,7 @@ public class Log {
      */
     private static String getLogCount () {
         return "INFO=%d | EXEC=%d | WARN=%d | ERROR=%d"
-                .formatted(infoCount, execCount, errorCount, warnCount);
+                .formatted(infoCount, execCount, warnCount, errorCount);
     }
 
     /**

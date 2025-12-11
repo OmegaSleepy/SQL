@@ -8,6 +8,8 @@ import java.io.File;
  * */
 public class CrashUtil {
 
+    public static boolean crashed = false;
+
     private CrashUtil(){}
 
     /**
@@ -16,6 +18,7 @@ public class CrashUtil {
      * @see #catchError(Exception)
      * **/
     public static void crash (Exception e){
+        crashed = true;
         Log.error(e.getMessage());
         Log.error("LIBRARY CRASHED");
         Script.end(SqlConnection.LIBRARY_START, System.nanoTime());
@@ -36,6 +39,7 @@ public class CrashUtil {
      * @see Credentials#inputCredentialFile(String path) 
      * **/
     public static void crashViolently(Exception e){
+        crashed = true;
         Log.error(e.getMessage());
         Log.error("LIBRARY CRASHED");
         Script.forceEnd(SqlConnection.LIBRARY_START, System.nanoTime());
