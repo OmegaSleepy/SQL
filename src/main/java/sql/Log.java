@@ -65,8 +65,8 @@ public class Log {
                     CrashUtil.crash(e);
                 }
             });
-            Files.walk(Paths.get(LOG_DIR,CRASH_DIR)).forEach(t -> {
-                try{
+            Files.walk(Paths.get(LOG_DIR, CRASH_DIR)).forEach(t -> {
+                try {
                     if (!Files.isDirectory(t))
                         Files.delete(t);
                 } catch (IOException e) {
@@ -100,7 +100,7 @@ public class Log {
 
         try {
             clearDir(Path.of(LOG_DIR));
-            clearDir(Path.of(LOG_DIR,CRASH_DIR));
+            clearDir(Path.of(LOG_DIR, CRASH_DIR));
 
         } catch (IOException e) {
             CrashUtil.crash(e);
@@ -108,7 +108,7 @@ public class Log {
 
     }
 
-    private static void clearDir(Path logDir) throws IOException {
+    private static void clearDir (Path logDir) throws IOException {
         List<Path> pathList = new ArrayList<>();
         //TODO implement checking if the file in actually in the logDir folder
         Files.walk(logDir).forEach(t -> {
@@ -240,7 +240,7 @@ public class Log {
 
         try {
             Files.write(logFile, log);
-            if(Files.exists(logLatest)) Files.delete(logLatest);
+            if (Files.exists(logLatest)) Files.delete(logLatest);
             Files.copy(logFile, logLatest);
 
         } catch (IOException e) {
@@ -325,6 +325,12 @@ public class Log {
      */
     public static final Consumer<List<String[]>> logSelect = rows -> {
 
+        info("logSelect.accept() called — stack:");
+        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
+            info("  at " + e.toString());
+        }
+
+
         if (rows == null || rows.isEmpty()) return;
 
 
@@ -354,13 +360,9 @@ public class Log {
             }
         }
 
-
-
         // print rows with proper alignment
         for (String[] row : rows) {
-
             StringBuilder formattedRow = getSpaceFormatedString(row, columns, maxWidthPerCell);
-
             info(formattedRow.toString());
         }
     };
@@ -394,6 +396,7 @@ public class Log {
 
     /**
      * Consumer for SQL code execution (CREATE, INSERT, UPDATE, DELETE).
+     *
      * @see Query#executeExpression(String query)
      */
     public static final Consumer<String> logSQL = Log::exec;

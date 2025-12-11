@@ -225,4 +225,12 @@ public class Query {
         return result.toArray(new String[0][]);
     }
 
+    public static String[] getRow (ArrayList<String[]> input, int column){
+        return input.get(column);
+    }
+
+    public static String[] getFirstRow (ArrayList<String[]> input){
+        return input.get(2);
+    }
+
 }
