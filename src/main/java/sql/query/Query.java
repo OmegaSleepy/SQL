@@ -1,6 +1,10 @@
-package sql;
+package sql.query;
 
+import common.CrashUtil;
+import common.FileUtil;
+import log.Log;
 import org.jetbrains.annotations.Nullable;
+import sql.SqlConnection;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,15 +17,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static sql.Log.info;
-import static sql.Log.logSQL;
-import static sql.Settings.logQueries;
-import static sql.Settings.logResults;
+import static log.Log.info;
+import static log.Log.logSQL;
+import static common.Settings.logQueries;
+import static common.Settings.logResults;
 import static sql.SqlConnection.connection;
 
 /**
  * Holds {@code static} methods for easy and safe querying
- * @see #getResult(String)
+ * @see #fromString(String)
  *
  * @see #executeExpression(String)
  * @see #selectOperation(PreparedStatement)
@@ -37,10 +41,10 @@ public class Query {
      * Splits a SQL query to single line queries and parses them to another method. This is in line and should not be changed.
      * @see #executeExpression(String query)
      * @see SqlConnection
-     * @see Log#logSelect
+     * @see log.Log#logSelect
      * */
     @Nullable
-    public static ArrayList<String[]> getResult (String fullSql) {
+    public static ArrayList<String[]> fromString (String fullSql) {
 
         String[] statements = fullSql.split(";");
 
@@ -63,15 +67,15 @@ public class Query {
     /**
      * Used to execute sql queries from a file in the resource folder.
      * Can't query from files that are outside the resource dir, use {@link #fromFile(String)} instead
-     * @see FileUtil#readResourceFile(String resourcePath)
-     * @see #getResult(String fullSQL)
+     * @see common.FileUtil#readResourceFile(String resourcePath)
+     * @see #fromString(String fullSQL)
      * @see #fromFile(String path)
      * **/
     public static ArrayList<String[]> fromResourceFile(String resourcePath) {
 
         if (logQueries) info("Running query from " + resourcePath);
 
-        return getResult(FileUtil.readResourceFile(resourcePath));
+        return fromString(common.FileUtil.readResourceFile(resourcePath));
 
     }
 
@@ -91,10 +95,10 @@ public class Query {
             {
                 builder.append(s).append(" ");
             }
-            return getResult(builder.toString());
+            return fromString(builder.toString());
 
         } catch (IOException e) {
-            CrashUtil.crash(e);
+            common.CrashUtil.crash(e);
         }
 
         return null;
@@ -111,7 +115,7 @@ public class Query {
      * **/
     public static ArrayList<ArrayList<String[]>> fromSequence (String sequenceFolder){
 
-        String sequenceContent = FileUtil.readResourceFile(
+        String sequenceContent = common.FileUtil.readResourceFile(
                 sequenceFolder + File.separator + "sequence.txt");
 
         var sequence = Arrays.stream(sequenceContent.split("\\R"))
@@ -124,10 +128,20 @@ public class Query {
         for(String script: sequence){
             if(!script.endsWith(".txt")) continue;
             String sql = FileUtil.readResourceFile(sequenceFolder + File.separator + script);
-            results.add(getResult(sql));
+            results.add(fromString(sql));
         }
 
         return results;
+
+    }
+
+    public static ArrayList<String[]> fromPreparedStatement(String preparedStatement){
+
+        var result = executeExpression(preparedStatement);
+
+        if(logResults) Log.logSelect.accept(result);
+
+        return result;
 
     }
 
@@ -136,7 +150,7 @@ public class Query {
      * Used to connect to the DB and decide which operation should be executed. Either {@code selectOperation} or {@code executeUpdate}.
      * The select operation should be used only for select type operations.
      * The execute update method for anything else.
-     * @see #getResult(String fullSQL)
+     * @see #fromString(String fullSQL)
      * @see #selectOperation(PreparedStatement statement)
      * @see PreparedStatement
      * **/
@@ -158,6 +172,22 @@ public class Query {
 
         return null;
 
+    }
+
+    private static ArrayList<String[]> executeExpression (PreparedStatement statement) {
+
+        if(logQueries) logSQL.accept(statement.toString());
+
+        try {
+            if (statement.toString().toLowerCase().startsWith("select")) {
+                selectOperation(statement);
+            } else {
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            CrashUtil.crash(e);
+        }
+        return null;
     }
 
     /**
@@ -194,43 +224,6 @@ public class Query {
         return result;
     }
 
-    /**
-     * This method is used to obtain a single column of a well-structured ArrayList result. 
-     * @see #extractColumns(ArrayList input, int[] columns) 
-     * **/
-    public static String[] extractColumn (ArrayList<String[]> input, int column){
-        ArrayList<String> result = new ArrayList<>();
 
-        for(String[] row: input){
-            result.add(row[column]);
-        }
-        //removing field name and an empty roll
-        result.removeFirst();
-        result.removeFirst();
-
-        return result.toArray(new String[0]);
-    }
-
-    /**
-     * This method is used to obtain multiple columns of a well-structured ArrayList result. 
-     * @see #extractColumn(ArrayList input, int column) 
-     * **/
-    public static String[][] extractColumns (ArrayList<String[]> input, int[] columns){
-        ArrayList<String[]> result = new ArrayList<>();
-
-        for(int i: columns){
-            result.add(extractColumn(input,i));
-        }
-
-        return result.toArray(new String[0][]);
-    }
-
-    public static String[] getRow (ArrayList<String[]> input, int column){
-        return input.get(column);
-    }
-
-    public static String[] getFirstRow (ArrayList<String[]> input){
-        return input.get(2);
-    }
 
 }

@@ -1,5 +1,8 @@
 package sql;
 
+import common.CrashUtil;
+import log.Log;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,12 +59,12 @@ public class Credentials {
             if (cred.size() > 2) {
                 password = cred.get(2);
             }
-            Log.info("Loaded credentials from file.");
+            log.Log.info("Loaded credentials from file.");
 
             checkValid();
 
         } catch (IOException e) {
-            CrashUtil.crashViolently(e);
+            common.CrashUtil.crashViolently(e);
         }
 
     }
@@ -78,19 +81,19 @@ public class Credentials {
 
         boolean isSuitable = true;
         if (Objects.equals(urlPlaceholder, url)) {
-            Log.error("URL is the placeholder value, please change!");
+            log.Log.error("URL is the placeholder value, please change!");
             isSuitable = false;
         }
         if (Objects.equals(usernamePlaceholder, username)) {
-            Log.error("Username is the placeholder value, please change!");
+            log.Log.error("Username is the placeholder value, please change!");
             isSuitable = false;
         }
         if (Objects.equals(passholderPlaceholder, password)) {
-            Log.error("Password is the placeholder value, please change!");
+            log.Log.error("Password is the placeholder value, please change!");
             isSuitable = false;
         }
         if (!isSuitable) {
-            CrashUtil.crashViolently(new RuntimeException("Error in credentials! Check logs for the error!"));
+            common.CrashUtil.crashViolently(new RuntimeException("Error in credentials! Check logs for the error!"));
         }
     }
 
@@ -107,7 +110,7 @@ public class Credentials {
 
             Files.write(path, List.of(urlPlaceholder, usernamePlaceholder, passholderPlaceholder));
 
-            CrashUtil.crashViolently(
+            common.CrashUtil.crashViolently(
                     new RuntimeException(
                             "Credential file did not exist. Go to %s and fill in your information".formatted(path)
                     )

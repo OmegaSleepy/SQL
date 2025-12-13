@@ -1,5 +1,9 @@
 package sql;
 
+import common.CrashUtil;
+import log.Log;
+import sql.query.Query;
+
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -8,11 +12,9 @@ import static sql.Credentials.*;
 /**
  * Holder class for the SQL Connection. Use this class' {@code static final connection} to access the server
  * @see #connection
- * @see Query
+ * @see sql.query.Query
  * **/
 public class SqlConnection {
-
-    //TODO Why not branch to try make an object class?
 
     private SqlConnection(){}
 
@@ -29,8 +31,6 @@ public class SqlConnection {
      * **/
     public static final long LIBRARY_START = System.nanoTime();
 
-    //TODO FIX double yes
-
     /**
      * Connects the lib to the database and reads a credentials file.
      * @see Credentials
@@ -46,7 +46,7 @@ public class SqlConnection {
         try {
             connection = DriverManager.getConnection(getUrl(), getUsername(), getPassword());
         } catch (SQLException e) {
-            CrashUtil.crashViolently(e);
+            common.CrashUtil.crashViolently(e);
         }
 
     }
@@ -70,7 +70,7 @@ public class SqlConnection {
         try {
             return connection.getNetworkTimeout();
         } catch (SQLException e) {
-            CrashUtil.catchError(e);
+            common.CrashUtil.catchError(e);
         }
         return -1;
     }

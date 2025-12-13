@@ -1,19 +1,16 @@
-package sql;
+package log;
 
-import java.io.IOException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import sql.query.Query;
+import common.Settings;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import static sql.Settings.*;
+import static common.Settings.*;
 
 /**
  * Simple class aimed at logging all activities of the program, holds an internal buffer, saves all logged actions during program execution, displays select queries,
@@ -22,15 +19,15 @@ import static sql.Settings.*;
  * @see #buffer
  * @see #log(String, String)
  * @see #logSelect
- * @see #saveLogFiles()
- * @see #cleanUp()
- * @see #clearAllLogs()
+ * @see LogFileHandler#saveLogFiles()
+ * @see LogFileHandler#cleanUp()
+ * @see LogFileHandler#clearAllLogs()
  *
  */
 public class Log {
 
-    public static String LOG_VERSION = "1.4.1";
-    public static int MAX_LOGS = 2;
+    public static String LOG_VERSION = "1.5.0";
+    public static int MAX_LOGS = 16;
     public static String LOG_DIR = "logs";
     public static String CRASH_DIR = "crash";
     public static String SUCCESSFUL_DIR = "regular";
@@ -43,119 +40,16 @@ public class Log {
      * Holds all logged information for {@code saveLogFiles} to write to a log and the latest log
      *
      * @see #log(String, String)
-     * @see #saveLogFiles()
+     * @see LogFileHandler#saveLogFiles()
      *
      */
     private static final List<String> buffer = new ArrayList<>();
 
-    /**
-     * Deletes all logs in the {@code LOG_DIR} folder. For chronological deletion check {@code cleanUp}
-     *
-     * @see #LOG_DIR
-     * @see #cleanUp()
-     *
-     */
-    public static void clearAllLogs () {
-
-        try {
-            Files.walk(Paths.get(LOG_DIR)).forEach(t -> {
-                try {
-                    if (!Files.isDirectory(t))
-                        Files.delete(t);
-                } catch (IOException e) {
-                    CrashUtil.crash(e);
-                }
-            });
-            Files.walk(Paths.get(LOG_DIR, CRASH_DIR)).forEach(t -> {
-                try {
-                    if (!Files.isDirectory(t))
-                        Files.delete(t);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (IOException e) {
-            CrashUtil.crash(e);
-        }
-
-        Log.warn("Cleared logs");
+    public static List<String> getBuffer () {
+        return buffer;
     }
 
-    /**
-     * Deletes logs in the {@code LOG_DIR} folder based on how old they are.
-     * It will delete enough files so there are less or equal to {@code MAX_LOGS}.
-     * For full clean-up, check {@code clearAllLogs}
-     *
-     * @see #clearAllLogs()
-     * @see #LOG_DIR
-     * @see #MAX_LOGS
-     *
-     */
-    public static void cleanUp () {
 
-        if (MAX_LOGS <= 0) {
-            error("MAX_LOGS is set to %s, will not clean up files.".formatted(MAX_LOGS));
-            error("Change value to a positive int.");
-            return;
-        }
-
-        try {
-            clearDir(Path.of(LOG_DIR, SUCCESSFUL_DIR));
-            clearDir(Path.of(LOG_DIR, CRASH_DIR));
-
-        } catch (IOException e) {
-            CrashUtil.crash(e);
-        }
-
-    }
-
-    private static void clearDir (Path logDir) throws IOException {
-        List<Path> pathList = new ArrayList<>();
-
-        Path base = logDir.toAbsolutePath().normalize();
-
-        Files.walk(logDir).forEach(t -> {
-            Path abs = t.toAbsolutePath().normalize();
-            if (abs.startsWith(base) && !t.endsWith("latest.log")) {
-                pathList.add(t);
-            } else {
-                // Skip anything that resolves outside the target directory (symlink traversal protection)
-                warn("Skipped path outside of logDir: %s".formatted(t));
-            }
-        });
-
-        int logCount = pathList.size();
-
-        Map<Boolean, String> logTranslate = Map.of(false, "log", true, "logs");
-
-        String logForm = logTranslate.get(checkPlural(logCount));
-
-        if (logCount > 0)
-            info("There are %d %s in memory".formatted(logCount, logForm));
-
-        if (logCount > MAX_LOGS) {
-            int difference = logCount - MAX_LOGS;
-
-            Log.error("There are over %d %s, deleting %d oldest"
-                    .formatted(MAX_LOGS, logForm, difference));
-
-            for (int i = 0; i < difference; i++) {
-
-                Path path = pathList.get(i);
-
-                if (Files.isRegularFile(path)) {
-                    Files.delete(path);
-                }
-
-                warn("Deleted %s".formatted(path));
-            }
-
-        }
-    }
-
-    private static boolean checkPlural (int i) {
-        return i > 1;
-    }
 
     /**
      * Logs info action with {@code GREEN} color, check the constants .kt file for the value
@@ -212,50 +106,7 @@ public class Log {
     static int warnCount;
     static int errorCount;
 
-    /**
-     * Saves {@code buffer} to two .log files. One is named with a timestamp and the second is latest.log.
-     *
-     * @see #buffer
-     *
-     */
-    public static void saveLogFiles () {
 
-        String fileName = LocalDateTime.now().format(Objects.requireNonNull(FILE)) + ".log";
-        String latest = "latest.log";
-
-        Path workingDir = CrashUtil.crashed ? Path.of(LOG_DIR, CRASH_DIR) : Path.of(LOG_DIR, SUCCESSFUL_DIR);
-
-        Path logFile = Path.of(workingDir.toString(), fileName);
-        Path logLatest = Path.of(workingDir.toString(), latest);
-
-        info(getLogVersion());
-        info(getLogCount());
-        info("Created log file at %s.".formatted(logFile));
-
-        if (!Files.exists(workingDir)) {
-            try {
-                Files.createDirectory(workingDir);
-            } catch (IOException e) {
-                CrashUtil.crash(e);
-            }
-        }
-
-        List<String> log = new ArrayList<>();
-
-        buffer.stream()
-                .map(Log::stripAnsi)
-                .forEach(log::add);
-
-
-        try {
-            Files.write(logFile, log);
-            if (Files.exists(logLatest)) Files.delete(logLatest);
-            Files.copy(logFile, logLatest);
-
-        } catch (IOException e) {
-            CrashUtil.crash(e);
-        }
-    }
 
     /**
      * Returns the log version in a neat format from the constants .kt file
@@ -263,7 +114,7 @@ public class Log {
      * @see #LOG_VERSION
      *
      */
-    private static String getLogVersion () {
+    public static String getLogVersion () {
         return "LOG VERSION=%s | LOG DIR=%s"
                 .formatted(LOG_VERSION, LOG_DIR);
     }
@@ -272,14 +123,14 @@ public class Log {
      * Returns the total amount of all log lines by type in a neat format
      *
      * @return String logCount
-     * @see #saveLogFiles()
+     * @see LogFileHandler#saveLogFiles()
      * @see #info(String message)
      * @see #exec(String message)
      * @see #error(String message)
      * @see #warn(String message)
      *
      */
-    private static String getLogCount () {
+    public static String getLogCount () {
         return "INFO=%d | EXEC=%d | WARN=%d | ERROR=%d"
                 .formatted(infoCount, execCount, warnCount, errorCount);
     }
@@ -287,7 +138,7 @@ public class Log {
     /**
      * Used in {@code .log} file creation. Removes Ansi values and replaces them with {@code String} values
      *
-     * @see #saveLogFiles()
+     * @see LogFileHandler#saveLogFiles()
      * @see #info(String message)
      * @see #exec(String message)
      * @see #error(String message)
@@ -329,7 +180,7 @@ public class Log {
     /**
      * Method used for quick and pretty display printing of {@code SELECT} type queries, usually directly called from {@code selectOperation}
      *
-     * @see Query#getResult(String SQL)
+     * @see Query#fromString(String SQL)
      *
      */
     public static final Consumer<List<String[]>> logSelect = rows -> {

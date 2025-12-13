@@ -1,10 +1,13 @@
-package sql;
+package common;
 
-import java.io.File;
+import log.Log;
+import sql.Credentials;
+import sql.Script;
+import sql.SqlConnection;
 
 /**
  * Simple class with methods aimed at logging errors and crashes so the Logger can safely record all events
- * @see Log
+ * @see log.Log
  * */
 public class CrashUtil {
 
@@ -14,33 +17,33 @@ public class CrashUtil {
 
     /**
      * Logging errors with this method will end the program, due to it saving and throwing the error. Will also close the connection safely
-     * @see Log#error(String) 
+     * @see log.Log#error(String)
      * @see #catchError(Exception)
      * **/
     public static void crash (Exception e){
         crashed = true;
-        Log.error(e.getMessage());
-        Log.error("LIBRARY CRASHED");
+        log.Log.error(e.getMessage());
+        log.Log.error("LIBRARY CRASHED");
         Script.end(SqlConnection.LIBRARY_START, System.nanoTime());
         throw new RuntimeException(e);
     }
     /**
      * Logging errors with this method will not end the program, this is a wrapper for Log.error
-     * @see Log#error(String)
+     * @see log.Log#error(String)
      * @see #crash(Exception)  
      * */
     public static void catchError (Exception e){
-        Log.error(e.getMessage());
+        log.Log.error(e.getMessage());
     }
 
     /**
      * THIS will not close the connection. Logging errors with this method will end the program, due to it saving and throwing the error.
-     * @see Log#error(String)
-     * @see Credentials#inputCredentialFile(String path) 
+     * @see log.Log#error(String)
+     * @see Credentials#inputCredentialFile(String path)
      * **/
     public static void crashViolently(Exception e){
         crashed = true;
-        Log.error(e.getMessage());
+        log.Log.error(e.getMessage());
         Log.error("LIBRARY CRASHED");
         Script.forceEnd(SqlConnection.LIBRARY_START, System.nanoTime());
         throw new RuntimeException(e);

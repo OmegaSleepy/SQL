@@ -1,4 +1,7 @@
-package sql;
+package common;
+
+import log.Log;
+import sql.query.Query;
 
 import java.sql.PreparedStatement;
 import java.time.format.DateTimeFormatter;
@@ -12,27 +15,27 @@ public class Settings {
 
     /**
      * Used to stop coloring everything past the timestamp
-     * @see Log#log(String message, String color)
+     * @see log.Log#log(String message, String color)
      * **/
     public static String RESET = "\u001B[0m";
     /**
      * Used for coloring the timestamp of info operations
-     * @see Log#info(String message)
+     * @see log.Log#info(String message)
      * **/
     public static String GREEN = "\u001B[32m";
     /**
      * Used for coloring the timestamp of execution operations
-     * @see Log#exec(String message)
+     * @see log.Log#exec(String message)
      * **/
     public static String BLUE = "\u001B[34m";
     /**
      * Used for coloring the timestamp of warn operations
-     * @see Log#warn(String message)
+     * @see log.Log#warn(String message)
      * **/
     public static String YELLOW = "\u001B[33m";
     /**
      * Used for coloring the timestamp of error operations
-     * @see Log#error(String message)
+     * @see log.Log#error(String message)
      * **/
     public static String RED = "\u001B[31m";
 
@@ -43,7 +46,7 @@ public class Settings {
     /**
      * Used to control the printing of queries
      * @see Query#executeExpression(String SQL)
-     * @see Log#logSQL
+     * @see log.Log#logSQL
      * **/
     public static boolean logQueries = true;
     /**
