@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -27,11 +28,11 @@ import static common.Settings.*;
  */
 public class Log {
 
-    public static String LOG_VERSION = "1.5.0";
+    public static final String LOG_VERSION = "1.5.0";
     public static int MAX_LOGS = 16;
-    public static String LOG_DIR = "logs";
-    public static String CRASH_DIR = "crash";
-    public static String SUCCESSFUL_DIR = "regular";
+    public static final String LOG_DIR = "logs";
+    public static final String CRASH_DIR = "crash";
+    public static final String SUCCESSFUL_DIR = "regular";
 
 
     private Log () {
@@ -47,7 +48,9 @@ public class Log {
     private static final List<String> buffer = Collections.synchronizedList(new ArrayList<>());
 
     public static List<String> getBuffer () {
-        return buffer;
+        synchronized (buffer) {
+            return Collections.unmodifiableList(new ArrayList<>(buffer));
+        }
     }
 
 
@@ -61,7 +64,7 @@ public class Log {
      */
     public static void info (String message) {
         log(message, GREEN);
-        infoCount++;
+        infoCount.incrementAndGet();
     }
 
     /**
@@ -73,7 +76,7 @@ public class Log {
      */
     public static void exec (String message) {
         log(message, BLUE);
-        execCount++;
+        execCount.incrementAndGet();
     }
 
     /**
@@ -86,7 +89,7 @@ public class Log {
 
     public static void warn (String message) {
         log(message, YELLOW);
-        warnCount++;
+        warnCount.incrementAndGet();
     }
 
     /**
@@ -98,14 +101,14 @@ public class Log {
      */
     public static void error (String message) {
         log(message, RED);
-        errorCount++;
+        errorCount.incrementAndGet();
     }
 
 
-    static int infoCount;
-    static int execCount;
-    static int warnCount;
-    static int errorCount;
+    static final AtomicInteger infoCount = new AtomicInteger();
+    static final AtomicInteger execCount = new AtomicInteger();
+    static final AtomicInteger warnCount = new AtomicInteger();
+    static final AtomicInteger errorCount = new AtomicInteger();
 
     /**
      * Returns the log version in a neat format from the constants .kt file
@@ -131,7 +134,7 @@ public class Log {
      */
     public static String getLogCount () {
         return "INFO=%d | EXEC=%d | WARN=%d | ERROR=%d"
-                .formatted(infoCount, execCount, warnCount, errorCount);
+                .formatted(infoCount.get(), execCount.get(), warnCount.get(), errorCount.get());
     }
 
     /**

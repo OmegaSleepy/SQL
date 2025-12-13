@@ -6,6 +6,7 @@ import sql.query.Query;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 
 import static sql.Credentials.*;
 
@@ -16,26 +17,41 @@ import static sql.Credentials.*;
  * **/
 public class SqlConnection {
 
-    private SqlConnection(){}
+    //had to actually de staticfy this one 😭
 
     /**
      * Used to access the server
      * @see SqlConnection
      * @see Query
      * **/
-    public static java.sql.Connection connection;
-    
+    public java.sql.Connection connection;
+
     /**
      * Holds the exact time the Library initializes as {@code nanoTime}. Used for profiling
      * @see Quit#end(long start, long end)
      * **/
-    public static final long LIBRARY_START = System.nanoTime();
+    public final long CONNECTION_START;
+
+    public static final long LIBRARY_START;
+
+    static {
+        LIBRARY_START = System.currentTimeMillis();
+    }
+
+    public SqlConnection(){
+
+        initializeConnection();
+        CONNECTION_START = System.currentTimeMillis();
+
+    }
+
+
 
     /**
      * Connects the lib to the database and reads a credentials file.
      * @see Credentials
      * **/
-    public static void initializeConnection(){
+    public void initializeConnection(){
 
         if(getUrl().isEmpty() || getUsername().isEmpty() || getPassword().isEmpty()){
 
@@ -55,7 +71,7 @@ public class SqlConnection {
      * Prints the saved credentials to the console
      * @see #initializeConnection()
      * **/
-    public static void printCredentials(){
+    public void printCredentials(){
         String displayPassword = getPassword();
         if(getPassword().isBlank()) displayPassword = "NONE>";
 
@@ -66,7 +82,7 @@ public class SqlConnection {
      * Returns the ping time in ms for the connection
      * @see #getInformation()
      * **/
-    public static int getPing(){
+    public int getPing(){
         try {
             return connection.getNetworkTimeout();
         } catch (SQLException e) {
@@ -81,7 +97,7 @@ public class SqlConnection {
      * @see #getPing()
      * @see #printCredentials()
      * **/
-    public static String getInformation() {
+    public String getInformation() {
         try {
             if(connection.isValid(5)){
                 return "Connection is stable and valid at URL %s ping %s ms".formatted(getUrl(), getPing());
@@ -93,8 +109,4 @@ public class SqlConnection {
         return "";
     }
 
-    //Initializing the connection by default at standard class initialization
-    static {
-        initializeConnection();
-    }
 }

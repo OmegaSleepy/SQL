@@ -5,6 +5,8 @@ import sql.Credentials;
 import sql.Quit;
 import sql.SqlConnection;
 
+import static sql.SqlConnection.LIBRARY_START;
+
 /**
  * Simple class with methods aimed at logging errors and crashes so the Logger can safely record all events
  * @see log.Log
@@ -24,7 +26,7 @@ public class CrashUtil {
         crashed = true;
         log.Log.error(e.getMessage());
         log.Log.error("LIBRARY CRASHED");
-        Quit.end(SqlConnection.LIBRARY_START, System.nanoTime());
+        Quit.end(LIBRARY_START, System.nanoTime());
         throw new RuntimeException(e);
     }
     /**
@@ -45,7 +47,7 @@ public class CrashUtil {
         crashed = true;
         log.Log.error(e.getMessage());
         Log.error("LIBRARY CRASHED");
-        Quit.forceEnd(SqlConnection.LIBRARY_START, System.nanoTime());
+        Quit.forceEnd(LIBRARY_START, System.nanoTime());
         throw new RuntimeException(e);
     }
 }

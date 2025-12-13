@@ -3,6 +3,8 @@ package sql.query;
 import java.util.ArrayList;
 
 public class Result {
+    //no need to touch for the thread safe rewrite
+
     /**
      * This method is used to obtain a single column of a well-structured ArrayList result.
      * @see #extractColumns(ArrayList input, int[] columns)

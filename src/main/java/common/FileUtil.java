@@ -15,6 +15,8 @@ public class FileUtil {
 
     private FileUtil(){}
 
+    //if we don't search for the same file (urm, yea this one should go)
+
     /**
      * Used in combination with {@code readResourceFile}. Used to safely get resource files inside of the .jar
      * @see #readResourceFile(String resourcePath)

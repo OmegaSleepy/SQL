@@ -21,17 +21,18 @@ import static log.Log.info;
 import static log.Log.logSQL;
 import static common.Settings.logQueries;
 import static common.Settings.logResults;
-import static sql.SqlConnection.connection;
+
+//TODO add all the Query stuff to the SqlConnection under the name "quick prepareStatementCreation", the actual execution should be still here
 
 /**
  * Holds {@code static} methods for easy and safe querying
- * @see #fromString(String)
+ * @see #fromString(String fullSQL, SqlConnection con)
  *
- * @see #executeExpression(String)
+ * @see #executeExpression(String expression, SqlConnection con)
  * @see #selectOperation(PreparedStatement)
  *
- * @see #fromResourceFile(String resourcePath)
- * @see #fromSequence(String resourcePath)
+ * @see #fromResourceFile(String resourcePath, SqlConnection con)
+ * @see #fromSequence(String resourcePath, SqlConnection con)
  * */
 public class Query {
 
@@ -39,12 +40,12 @@ public class Query {
 
     /**
      * Splits a SQL query to single line queries and parses them to another method. This is in line and should not be changed.
-     * @see #executeExpression(String query)
+     * @see #executeExpression(String query, SqlConnection con)
      * @see SqlConnection
      * @see log.Log#logSelect
      * */
     @Nullable
-    public static ArrayList<String[]> fromString (String fullSql) {
+    public static ArrayList<String[]> fromString (String fullSql, SqlConnection con) {
 
         String[] statements = fullSql.split(";");
 
@@ -55,7 +56,7 @@ public class Query {
 
             if (query.isEmpty()) continue;
 
-            result = executeExpression(query);
+            result = executeExpression(query,con);
 
             if(logResults) Log.logSelect.accept(result);
 
@@ -65,27 +66,27 @@ public class Query {
     }
 
     /**
-     * Used to execute sql queries from a file in the resource folder.
-     * Can't query from files that are outside the resource dir, use {@link #fromFile(String)} instead
+     * Used to execute SQL queries from a file in the resource folder.
+     * Can't query from files that are outside the resource dir, use {@link #fromFile(String path, SqlConnection con)} instead
      * @see common.FileUtil#readResourceFile(String resourcePath)
-     * @see #fromString(String fullSQL)
-     * @see #fromFile(String path)
+     * @see #fromString(String fullSQL, SqlConnection con)
+     * @see #fromFile(String path, SqlConnection con)
      * **/
-    public static ArrayList<String[]> fromResourceFile(String resourcePath) {
+    public static ArrayList<String[]> fromResourceFile(String resourcePath, SqlConnection con) {
 
         if (logQueries) info("Running query from " + resourcePath);
 
-        return fromString(common.FileUtil.readResourceFile(resourcePath));
+        return fromString(common.FileUtil.readResourceFile(resourcePath), con);
 
     }
 
     /**
-     * Used to execute sql queries from a file anywhere in the project. It is discouraged
-     * to query from resource files with this method, check {@link #fromSequence(String)}
+     * Used to execute SQL queries from a file anywhere in the project. It is discouraged
+     * to query from resource files with this method, check {@link #fromSequence(String resourcePath, SqlConnection con)}
      * for these use cases
-     * @see #fromResourceFile(String)
+     * @see #fromResourceFile(String path, SqlConnection con)
      * */
-    public static ArrayList<String[]> fromFile(String path) {
+    public static ArrayList<String[]> fromFile(String path, SqlConnection con) {
 
         if (logQueries) info("Running query from " + path);
 
@@ -95,7 +96,7 @@ public class Query {
             {
                 builder.append(s).append(" ");
             }
-            return fromString(builder.toString());
+            return fromString(builder.toString(), con);
 
         } catch (IOException e) {
             common.CrashUtil.crash(e);
@@ -111,9 +112,10 @@ public class Query {
      *     <p>{@code <\Script1\>.txt, <\Script2\>.txt...}</p>
      * </div>
      * Files can be named anything, but they must be a .txt file.
-     * @see #fromResourceFile(String resourcePath)
+     * @see #fromResourceFile(String resourcePath, SqlConnection con)
      * **/
-    public static ArrayList<ArrayList<String[]>> fromSequence (String sequenceFolder){
+    @Deprecated
+    public static ArrayList<ArrayList<String[]>> fromSequence (String sequenceFolder, SqlConnection con) {
 
         String sequenceContent = common.FileUtil.readResourceFile(
                 sequenceFolder + File.separator + "sequence.txt");
@@ -128,14 +130,14 @@ public class Query {
         for(String script: sequence){
             if(!script.endsWith(".txt")) continue;
             String sql = FileUtil.readResourceFile(sequenceFolder + File.separator + script);
-            results.add(fromString(sql));
+            results.add(fromString(sql, con));
         }
 
         return results;
 
     }
 
-    public static ArrayList<String[]> fromPreparedStatement(String preparedStatement){
+    public static ArrayList<String[]> fromPreparedStatement(PreparedStatement preparedStatement){
 
         var result = executeExpression(preparedStatement);
 
@@ -145,20 +147,19 @@ public class Query {
 
     }
 
-
     /**
      * Used to connect to the DB and decide which operation should be executed. Either {@code selectOperation} or {@code executeUpdate}.
      * The select operation should be used only for select type operations.
      * The execute update method for anything else.
-     * @see #fromString(String fullSQL)
+     * @see #fromString(String fullSQL, SqlConnection con)
      * @see #selectOperation(PreparedStatement statement)
      * @see PreparedStatement
      * **/
-    private static ArrayList<String[]> executeExpression (String query) {
+    private static ArrayList<String[]> executeExpression (String query, SqlConnection con) {
 
         if(logQueries) logSQL.accept(query);
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (PreparedStatement statement = con.connection.prepareStatement(query)) {
 
             if (query.toLowerCase().startsWith("select")) {
                 return selectOperation(statement);
@@ -193,7 +194,7 @@ public class Query {
     /**
      * This method is used to obtain all values from a table and puts them into a {@code ArrayList} for each row. All value
      * are saved as {@code String}
-     * @see #executeExpression(String query)
+     * @see #executeExpression(String query, SqlConnection con)
      * @see ResultSet
      * **/
     private static ArrayList<String[]> selectOperation (PreparedStatement statement) throws SQLException {

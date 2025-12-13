@@ -17,6 +17,9 @@ import static log.Log.*;
 
 public class LogFileHandler {
 
+    //some architectural thinking here - I will not be needing to write and clean up log files constantly. Like every 2 to 4 hours will be fine,
+    // which means I won't really need to clear often, so that means that not using a file channel is fine, right?
+
     private LogFileHandler () {}
 
     /**
