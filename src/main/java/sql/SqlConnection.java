@@ -27,7 +27,7 @@ public class SqlConnection {
     
     /**
      * Holds the exact time the Library initializes as {@code nanoTime}. Used for profiling
-     * @see Script#end(long start, long end) 
+     * @see Quit#end(long start, long end)
      * **/
     public static final long LIBRARY_START = System.nanoTime();
 

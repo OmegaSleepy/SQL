@@ -5,6 +5,7 @@ import common.Settings;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -43,7 +44,7 @@ public class Log {
      * @see LogFileHandler#saveLogFiles()
      *
      */
-    private static final List<String> buffer = new ArrayList<>();
+    private static final List<String> buffer = Collections.synchronizedList(new ArrayList<>());
 
     public static List<String> getBuffer () {
         return buffer;
@@ -105,8 +106,6 @@ public class Log {
     static int execCount;
     static int warnCount;
     static int errorCount;
-
-
 
     /**
      * Returns the log version in a neat format from the constants .kt file

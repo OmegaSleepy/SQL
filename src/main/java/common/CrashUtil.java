@@ -2,7 +2,7 @@ package common;
 
 import log.Log;
 import sql.Credentials;
-import sql.Script;
+import sql.Quit;
 import sql.SqlConnection;
 
 /**
@@ -24,7 +24,7 @@ public class CrashUtil {
         crashed = true;
         log.Log.error(e.getMessage());
         log.Log.error("LIBRARY CRASHED");
-        Script.end(SqlConnection.LIBRARY_START, System.nanoTime());
+        Quit.end(SqlConnection.LIBRARY_START, System.nanoTime());
         throw new RuntimeException(e);
     }
     /**
@@ -45,7 +45,7 @@ public class CrashUtil {
         crashed = true;
         log.Log.error(e.getMessage());
         Log.error("LIBRARY CRASHED");
-        Script.forceEnd(SqlConnection.LIBRARY_START, System.nanoTime());
+        Quit.forceEnd(SqlConnection.LIBRARY_START, System.nanoTime());
         throw new RuntimeException(e);
     }
 }
