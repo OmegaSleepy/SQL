@@ -29,10 +29,11 @@ import static sql.Settings.*;
  */
 public class Log {
 
-    public static String LOG_VERSION = "1.4.0";
+    public static String LOG_VERSION = "1.4.1";
     public static int MAX_LOGS = 2;
     public static String LOG_DIR = "logs";
     public static String CRASH_DIR = "crash";
+    public static String SUCCESSFUL_DIR = "regular";
 
 
     private Log () {
@@ -99,7 +100,7 @@ public class Log {
         }
 
         try {
-            clearDir(Path.of(LOG_DIR));
+            clearDir(Path.of(LOG_DIR, SUCCESSFUL_DIR));
             clearDir(Path.of(LOG_DIR, CRASH_DIR));
 
         } catch (IOException e) {
@@ -110,9 +111,17 @@ public class Log {
 
     private static void clearDir (Path logDir) throws IOException {
         List<Path> pathList = new ArrayList<>();
-        //TODO implement checking if the file in actually in the logDir folder
+
+        Path base = logDir.toAbsolutePath().normalize();
+
         Files.walk(logDir).forEach(t -> {
-            pathList.add(t);
+            Path abs = t.toAbsolutePath().normalize();
+            if (abs.startsWith(base) && !t.endsWith("latest.log")) {
+                pathList.add(t);
+            } else {
+                // Skip anything that resolves outside the target directory (symlink traversal protection)
+                warn("Skipped path outside of logDir: %s".formatted(t));
+            }
         });
 
         int logCount = pathList.size();
@@ -214,7 +223,7 @@ public class Log {
         String fileName = LocalDateTime.now().format(Objects.requireNonNull(FILE)) + ".log";
         String latest = "latest.log";
 
-        Path workingDir = CrashUtil.crashed ? Path.of(LOG_DIR, CRASH_DIR) : Path.of(LOG_DIR);
+        Path workingDir = CrashUtil.crashed ? Path.of(LOG_DIR, CRASH_DIR) : Path.of(LOG_DIR, SUCCESSFUL_DIR);
 
         Path logFile = Path.of(workingDir.toString(), fileName);
         Path logLatest = Path.of(workingDir.toString(), latest);
@@ -324,12 +333,6 @@ public class Log {
      *
      */
     public static final Consumer<List<String[]>> logSelect = rows -> {
-
-        info("logSelect.accept() called — stack:");
-        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
-            info("  at " + e.toString());
-        }
-
 
         if (rows == null || rows.isEmpty()) return;
 
