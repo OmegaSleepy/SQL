@@ -45,7 +45,7 @@ public class Settings {
 
     /**
      * Used to control the printing of queries
-     * @see Query#executeExpression(String SQL)
+     * @see Query#executeExpression(String SQL, sql.SqlConnection con)
      * @see log.Log#logSQL
      * **/
     public static boolean logQueries = true;

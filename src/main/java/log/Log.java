@@ -182,7 +182,7 @@ public class Log {
     /**
      * Method used for quick and pretty display printing of {@code SELECT} type queries, usually directly called from {@code selectOperation}
      *
-     * @see Query#fromString(String SQL)
+     * @see Query#fromString(String SQL, sql.SqlConnection con)
      *
      */
     public static final Consumer<List<String[]>> logSelect = rows -> {
@@ -218,6 +218,11 @@ public class Log {
 
         // print rows with proper alignment
         for (String[] row : rows) {
+            if(row == rows.get(1)){
+                var rowMT = new String[columns];
+                StringBuilder formattedRow = getSpaceFormatedString(rowMT, columns, maxWidthPerCell);
+                info(formattedRow.toString());
+            }
             StringBuilder formattedRow = getSpaceFormatedString(row, columns, maxWidthPerCell);
             info(formattedRow.toString());
         }
@@ -253,7 +258,7 @@ public class Log {
     /**
      * Consumer for SQL code execution (CREATE, INSERT, UPDATE, DELETE).
      *
-     * @see Query#executeExpression(String query)
+     * @see Query#executeExpression(String query, sql.SqlConnection con)
      */
     public static final Consumer<String> logSQL = Log::exec;
 

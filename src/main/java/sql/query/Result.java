@@ -41,6 +41,6 @@ public class Result {
     }
 
     public static String[] getFirstRow (ArrayList<String[]> input){
-        return input.get(2);
+        return input.get(1);
     }
 }

@@ -154,6 +154,12 @@ public class LogFileHandler {
             }
         }
 
+        try {
+            Files.createDirectory(Path.of(SUCCESSFUL_DIR));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         List<String> log = new ArrayList<>();
 
         getBuffer().stream()

@@ -106,7 +106,7 @@ public class Query {
     }
 
     /**
-     * Used to execute multiple .txt files containing sql scripts. Imputed dir should be in {@code resources/scripts/line/}
+     * Used to execute multiple .txt files containing SQL scripts. Imputed dir should be in {@code resources/scripts/line/}
      * All sequence line folders should contain sequence.txt that must follow this format:
      * <div style="margin:0px">
      *     <p>{@code <\Script1\>.txt, <\Script2\>.txt...}</p>
@@ -209,8 +209,7 @@ public class Query {
                 columnNames[i] = (metaData.getColumnName(i+1));
             }
 
-            result.add(0,columnNames);
-            result.add(1,new String[]{"","",""});
+            result.addFirst(columnNames);
 
             // loop through all rows
             while (resultSet.next()) {
