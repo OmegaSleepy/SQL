@@ -1,6 +1,7 @@
 package log;
 
 import common.CrashUtil;
+import common.Settings;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +21,8 @@ public class LogFileHandler {
     //some architectural thinking here - I will not be needing to write and clean up log files constantly. Like every 2 to 4 hours will be fine,
     // which means I won't really need to clear often, so that means that not using a file channel is fine, right?
 
-    private LogFileHandler () {}
+    private LogFileHandler () {
+    }
 
     /**
      * Deletes all logs in the {@code LOG_DIR} folder. For chronological deletion check {@code cleanUp}
@@ -78,7 +80,7 @@ public class LogFileHandler {
         List<Path> pathList = new ArrayList<>();
 
         Path base = logDir.toAbsolutePath().normalize();
-        try{
+        try {
             Files.walk(logDir).forEach(t -> {
                 Path abs = t.toAbsolutePath().normalize();
                 if (abs.startsWith(base) && !t.endsWith("latest.log")) {
@@ -89,7 +91,6 @@ public class LogFileHandler {
                 }
             });
         } catch (IOException e) {
-            CrashUtil.crash(e);
         }
 
 
@@ -157,7 +158,6 @@ public class LogFileHandler {
         try {
             Files.createDirectory(Path.of(SUCCESSFUL_DIR));
         } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
         List<String> log = new ArrayList<>();
@@ -178,5 +178,19 @@ public class LogFileHandler {
 
     private static boolean checkPlural (int i) {
         return i > 1;
+    }
+
+    static {
+        try {
+            Files.createDirectory(Path.of(LOG_DIR, CRASH_DIR));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            Files.createDirectory(Path.of(LOG_DIR, SUCCESSFUL_DIR));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }
