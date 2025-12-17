@@ -181,13 +181,30 @@ public class LogFileHandler {
     }
 
     static {
+        try{
+            Path dir = Path.of(LOG_DIR);
+            if (!Files.exists(dir)) {
+                Files.createDirectory(dir);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         try {
-            Files.createDirectory(Path.of(LOG_DIR, CRASH_DIR));
+            Path dir = Path.of(LOG_DIR, CRASH_DIR);
+
+            if(!Files.exists(dir)) {
+                Files.createDirectory(dir);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         try {
-            Files.createDirectory(Path.of(LOG_DIR, SUCCESSFUL_DIR));
+            Path dir = Path.of(LOG_DIR, SUCCESSFUL_DIR);
+
+            if(!Files.exists(dir)) {
+                Files.createDirectory(dir);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
